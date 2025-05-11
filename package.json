@@ -1,0 +1,26 @@
+{
+  "name": "idi-coins",
+  "version": "1.0.0",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "concurrently \"webpack --config webpack/webpack.renderer.js --watch\" \"webpack --config webpack/webpack.main.js --watch\" \"electron .\"",
+    "build": "webpack --config webpack/webpack.renderer.js && webpack --config webpack/webpack.main.js",
+    "electron": "electron ."
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "concurrently": "^8.2.2",
+    "electron": "^24.0.0",
+    "html-webpack-plugin": "^5.6.3",
+    "ts-loader": "^9.0.0",
+    "typescript": "^5.0.0",
+    "webpack": "^5.0.0",
+    "webpack-cli": "^4.0.0"
+  }
+}
