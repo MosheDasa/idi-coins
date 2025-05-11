@@ -1,14 +1,33 @@
 import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 
-function createWindow() {
-  const mainWindow = new BrowserWindow({
+let mainWindow: BrowserWindow | null = null;
+let splashWindow: BrowserWindow | null = null;
+
+function createSplashWindow() {
+  splashWindow = new BrowserWindow({
+    width: 500,
+    height: 350,
+    frame: false,
+    transparent: true,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
+  });
+
+  splashWindow.loadFile(path.join(__dirname, 'splash.html'));
+}
+
+function createMainWindow() {
+  mainWindow = new BrowserWindow({
     width: 500,
     height: 350,
     icon: path.join(__dirname, '../public/icon.ico'),
     resizable: false,
     frame: true,
     show: true,
+    transparent: true,
     minimizable: true,
     maximizable: false,
     fullscreenable: false,
@@ -24,12 +43,23 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
   
-  if (process.env.NODE_ENV === 'development') {
-   //  mainWindow.webContents.openDevTools();
-  }
+  mainWindow.webContents.on('did-finish-load', () => {
+    setTimeout(() => {
+      if (splashWindow) {
+        splashWindow.close();
+        splashWindow = null;
+      }
+      if (mainWindow) {
+        mainWindow.show();
+      }
+    }, 1000);
+  });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createSplashWindow();
+  createMainWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -39,6 +69,7 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    createSplashWindow();
+    createMainWindow();
   }
 }); 
