@@ -5,7 +5,9 @@
   "scripts": {
     "start": "concurrently \"webpack --config webpack/webpack.renderer.js --watch\" \"webpack --config webpack/webpack.main.js --watch\" \"electron .\"",
     "build": "webpack --config webpack/webpack.renderer.js && webpack --config webpack/webpack.main.js",
-    "electron": "electron ."
+    "electron": "electron .",
+    "clean": "rimraf dist && rimraf release",
+    "full-run": "npm run clean && npm run build && npm run start"
   },
   "dependencies": {
     "react": "^18.0.0",
