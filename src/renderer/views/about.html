@@ -190,6 +190,7 @@
             border-radius: 8px;
             transition: all 0.2s ease;
             flex-direction: row-reverse;
+            min-height: 40px;
         }
 
         .path-text {
@@ -197,10 +198,14 @@
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-size: 13px;
             color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
+            word-break: break-all;
             text-align: right;
+            line-height: 1.4;
+        }
+
+        .path-text:hover {
+            color: var(--text-color);
         }
 
         .footer {
@@ -319,7 +324,7 @@
                 <div class="setting-item">
                     <div class="setting-label">נתיב קובץ הלוגים</div>
                     <div class="path-container">
-                        <div class="path-text" id="configPath" dir="ltr">loading...</div>
+                        <div class="path-text" id="configPath" dir="ltr" title="לחץ להעתקה">loading...</div>
                         <button class="button secondary-button" onclick="openLogsDirectory()">פתח</button>
                     </div>
                 </div>
@@ -358,7 +363,19 @@
             document.getElementById('version').textContent = settings.version;
             document.getElementById('environment').textContent = 
                 settings.environment === 'development' ? 'Development' : 'Production';
-            document.getElementById('configPath').textContent = settings.configPath || '---';
+            
+            // Set log path with copy functionality
+            const configPath = document.getElementById('configPath');
+            configPath.textContent = settings.configPath || '---';
+            configPath.addEventListener('click', () => {
+                navigator.clipboard.writeText(settings.configPath).then(() => {
+                    const originalText = configPath.textContent;
+                    configPath.textContent = 'הועתק!';
+                    setTimeout(() => {
+                        configPath.textContent = originalText;
+                    }, 1000);
+                });
+            });
             
             // Set editable fields
             document.getElementById('userId').value = settings.userId || '';
