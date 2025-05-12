@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html dir="rtl">
 <head>
     <title>הגדרות idi-coins</title>
     <style>
@@ -48,6 +48,7 @@
             font-weight: 600;
             color: var(--text-color);
             margin-bottom: 8px;
+            text-align: right;
         }
 
         .header-meta {
@@ -57,12 +58,14 @@
             color: var(--text-secondary);
             font-size: 14px;
             flex-direction: row-reverse;
+            justify-content: flex-end;
         }
 
         .version-tag {
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-direction: row-reverse;
         }
 
         .env-tag {
@@ -106,6 +109,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            text-align: right;
         }
 
         .setting-label {
@@ -124,6 +128,7 @@
             background: var(--background-color);
             transition: all 0.2s ease;
             box-sizing: border-box;
+            text-align: right;
         }
 
         input[type="text"]:hover {
@@ -141,6 +146,7 @@
             align-items: center;
             gap: 12px;
             flex-direction: row-reverse;
+            justify-content: flex-end;
         }
 
         .switch {
@@ -173,7 +179,7 @@
             content: "";
             height: 16px;
             width: 16px;
-            left: 2px;
+            right: 2px;
             bottom: 2px;
             background-color: white;
             transition: .2s;
@@ -185,7 +191,7 @@
         }
 
         input:checked + .slider:before {
-            transform: translateX(16px);
+            transform: translateX(-16px);
         }
 
         .path-container {
@@ -196,6 +202,7 @@
             background-color: #f8fafc;
             border-radius: 8px;
             transition: all 0.2s ease;
+            flex-direction: row-reverse;
         }
 
         .path-text {
@@ -206,6 +213,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            text-align: right;
         }
 
         .footer {
@@ -219,7 +227,7 @@
             max-width: 456px;
             margin: 0 auto;
             display: flex;
-            justify-content: flex-start;
+            justify-content: flex-end;
         }
 
         .button {
@@ -260,8 +268,8 @@
         .toast {
             position: fixed;
             bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 50%;
+            transform: translateX(50%);
             background-color: var(--success-color);
             color: white;
             padding: 12px 24px;
@@ -274,11 +282,11 @@
 
         @keyframes slideUp {
             from {
-                transform: translate(-50%, 100%);
+                transform: translate(50%, 100%);
                 opacity: 0;
             }
             to {
-                transform: translate(-50%, 0);
+                transform: translate(50%, 0);
                 opacity: 1;
             }
         }
