@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, dialog, MenuItemConstructorOptions } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, dialog, MenuItemConstructorOptions, globalShortcut } from 'electron';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
@@ -184,6 +184,16 @@ app.whenReady().then(() => {
   createMenu();
   createSplashWindow();
   createMainWindow();
+  
+  // Register keyboard shortcut
+  globalShortcut.register('CommandOrControl+Shift+Z', () => {
+    createAboutWindow();
+  });
+});
+
+// Add cleanup for shortcuts
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });
 
 app.on('window-all-closed', () => {
