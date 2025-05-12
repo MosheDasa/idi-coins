@@ -366,6 +366,11 @@
         const { ipcRenderer } = require('electron');
 
         async function openLogsDirectory() {
+            const settings = await ipcRenderer.invoke('get-settings');
+            if (!settings.enableLogs) {
+                alert('רישום לוגים מושבת. יש להפעיל רישום לוגים כדי לפתוח את תיקיית הלוגים.');
+                return;
+            }
             await ipcRenderer.invoke('open-logs-directory');
         }
 
