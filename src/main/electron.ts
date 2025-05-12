@@ -108,7 +108,7 @@ function createMainWindow() {
     height: 350,
     icon: path.join(__dirname, '../public/icon.ico'),
     resizable: false,
-    frame: true,
+    frame: false,
     show: false,
     backgroundColor: '#ffffff',
     transparent: false,
@@ -124,6 +124,9 @@ function createMainWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  
+  // Remove menu
+  mainWindow.removeMenu();
   
   mainWindow.webContents.on('did-finish-load', () => {
     setTimeout(() => {
@@ -147,6 +150,18 @@ ipcMain.handle('get-api-url', () => {
 });
 
 ipcMain.handle('get-settings', () => settings);
+
+ipcMain.handle('minimize-window', () => {
+  if (mainWindow) {
+    mainWindow.minimize();
+  }
+});
+
+ipcMain.handle('close-window', () => {
+  if (mainWindow) {
+    mainWindow.close();
+  }
+});
 
 ipcMain.handle('save-settings', async (event, newSettings) => {
   // Update settings object
@@ -181,7 +196,6 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
 });
 
 app.whenReady().then(() => {
-  createMenu();
   createSplashWindow();
   createMainWindow();
   

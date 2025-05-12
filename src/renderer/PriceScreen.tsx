@@ -16,6 +16,8 @@ declare global {
   interface Window {
     electron: {
       getApiUrl: () => Promise<string>;
+      minimize: () => void;
+      close: () => void;
     }
   }
 }
@@ -94,40 +96,126 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
   }
 
   return (
-    <div style={{
-      padding: '20px',
-      fontFamily: 'Arial, sans-serif',
-      textAlign: 'center',
-      direction: 'rtl'
-    }}>
-      <p>נציג: משה כהן</p>
-      {isLoading || !genderData ? (
-        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '150px'}}>
-          <div className="loader" style={{
-            width: '60px',
-            height: '60px',
-            border: '8px solid #f3f3f3',
-            borderTop: '8px solid #3498db',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <span style={{marginTop: '16px'}}>טוען נתונים...</span>
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
+    <>
+      {/* Custom title bar */}
+      <div style={{
+        WebkitUserSelect: 'none',
+        height: '32px',
+        backgroundColor: '#2196F3',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        padding: '0'
+      }} className="draggable">
+        <div style={{
+          display: 'flex',
+          height: '100%'
+        }} className="non-draggable">
+          <button onClick={() => window.electron.minimize()} style={{
+            border: 'none',
+            background: 'none',
+            width: '46px',
+            height: '100%',
+            cursor: 'pointer',
+            fontSize: '16px',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background-color 0.2s'
+          }} className="window-control">
+            &#x2014;
+          </button>
+          <button onClick={() => window.electron.close()} style={{
+            border: 'none',
+            background: 'none',
+            width: '46px',
+            height: '100%',
+            cursor: 'pointer',
+            fontSize: '16px',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background-color 0.2s'
+          }} className="window-control close-button">
+            &#x2715;
+          </button>
         </div>
-      ) : (
-        <>
-          <p>מספר התוצאות: {genderData.count}</p>
-          <p>שם: {genderData.name}</p>
-          <p>מין: {genderData.gender}</p>
-          <p>הסתברות: {genderData.probability}</p>
-        </>
-      )}
-    </div>
+      </div>
+
+      {/* Main content */}
+      <div style={{
+        padding: '20px',
+        fontFamily: 'Arial, sans-serif',
+        textAlign: 'center',
+        direction: 'rtl',
+        height: 'calc(100vh - 32px)',
+        boxSizing: 'border-box',
+        overflow: 'hidden'
+      }}>
+        <style>{`
+          body {
+            margin: 0;
+            overflow: hidden;
+          }
+          
+          .draggable {
+            -webkit-app-region: drag;
+          }
+          
+          .non-draggable {
+            -webkit-app-region: no-drag;
+          }
+          
+          .window-control:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+          }
+          
+          .close-button:hover {
+            background-color: #e81123 !important;
+          }
+          
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+
+        <p>נציג: משה כהן</p>
+        {isLoading || !genderData ? (
+          <div style={{
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            height: 'calc(100% - 60px)'
+          }}>
+            <div className="loader" style={{
+              width: '60px',
+              height: '60px',
+              border: '8px solid #f3f3f3',
+              borderTop: '8px solid #2196F3',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }} />
+            <span style={{marginTop: '16px'}}>טוען נתונים...</span>
+          </div>
+        ) : (
+          <div style={{
+            height: 'calc(100% - 60px)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center'
+          }}>
+            <p>מספר התוצאות: {genderData.count}</p>
+            <p>שם: {genderData.name}</p>
+            <p>מין: {genderData.gender}</p>
+            <p>הסתברות: {genderData.probability}</p>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "idi-coins",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "idi-coins",
   "main": "dist/main.js",
   "scripts": {

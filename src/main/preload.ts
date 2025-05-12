@@ -14,6 +14,8 @@ contextBridge.exposeInMainWorld(
       }
     },
     getSettings: () => ipcRenderer.invoke('get-settings'),
-    saveSettings: (settings: any) => ipcRenderer.invoke('save-settings', settings)
+    saveSettings: (settings: any) => ipcRenderer.invoke('save-settings', settings),
+    minimize: () => ipcRenderer.invoke('minimize-window'),
+    close: () => ipcRenderer.invoke('close-window')
   }
 ); 
