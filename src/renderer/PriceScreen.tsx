@@ -11,13 +11,23 @@ interface PriceScreenProps {
   onDataLoaded?: () => void;
 }
 
+// We'll get this from the window object
+declare global {
+  interface Window {
+    electron: {
+      getApiUrl: () => string;
+    }
+  }
+}
+
 const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
   const [genderData, setGenderData] = useState<GenderData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchGenderData = async () => {
     try {
-      const response = await fetch('https://api.genderize.io/?name=luc', {
+      const apiUrl = window.electron.getApiUrl();
+      const response = await fetch(`${apiUrl}/?name=luc`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',

@@ -1,5 +1,12 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
+import * as dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+// Store API URL - use default if not set
+const API_URL = process.env.API_URL || 'https://api.genderize.io';
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
@@ -12,7 +19,8 @@ function createSplashWindow() {
     transparent: true,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
     }
   });
 
@@ -34,10 +42,13 @@ function createMainWindow() {
     closable: true,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false,
-      webSecurity: false
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
     }
   });
+
+  // Set up IPC handler for API URL
+  ipcMain.handle('get-api-url', () => API_URL);
 
   mainWindow.removeMenu();
 

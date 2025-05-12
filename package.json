@@ -1,15 +1,17 @@
 {
   "name": "idi-coins",
-  "version": "1.0.0",
+  "version": "1.0.7",
   "description": "idi-coins",
   "main": "dist/main.js",
   "scripts": {
-    "start": "electron .",
-    "build": "webpack --config webpack/webpack.renderer.js && webpack --config webpack/webpack.main.js",
+    "start": "cross-env NODE_ENV=development electron .",
+    "build": "cross-env NODE_ENV=production webpack --config webpack.config.ts",
     "package": "electron-builder --win",
     "clean": "rimraf dist && rimraf release",
-    "full-run": "npm run clean && npm run build && npm run package",
-    "full-run-win": "npm run clean && npm run build && npm run package -- --win"
+    "full-run": "npm run clean && npm run build && npm run start",
+    "full-run-dev": "npm run build && npm run start",
+    "full-run-win": "npm run version:patch && rimraf release && cross-env API_URL=https://api.genderize.io NODE_ENV=production npm run build && npm run package -- --win",
+    "version:patch": "npm version patch --no-git-tag-version"
   },
   "build": {
     "appId": "com.idi.coins",
@@ -19,24 +21,35 @@
     "win": {
       "target": "nsis",
       "icon": "public/icon.ico"
-    }
+    },
+    "extraMetadata": {
+      "main": "dist/main.js"
+    },
+    "files": [
+      "dist/**/*"
+    ]
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@types/webpack": "^5.28.5",
     "copy-webpack-plugin": "^11.0.0",
+    "cross-env": "^7.0.3",
     "css-loader": "^6.8.1",
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1",
     "html-webpack-plugin": "^5.6.0",
+    "rimraf": "^5.0.5",
     "style-loader": "^3.3.3",
     "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4"
