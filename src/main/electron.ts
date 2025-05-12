@@ -13,14 +13,14 @@ dotenv.config();
 // Settings management
 let settings = {
   version: app.getVersion(),
-  environment: process.env.NODE_ENV || 'development',
-  enableLogs: true,
-  userId: process.env.USERID || '',
-  representativeName: 'משה כהן',
-  connected: false,
-  devMode: false,
-  apiUrl: process.env.API_URL || '',
-  apiRefreshInterval: Number(process.env.API_REFRESH_INTERVAL) || 30
+  environment: process.env.NODE_ENV,
+  enableLogs: process.env.ENABLE_LOGS !== undefined ? process.env.ENABLE_LOGS === 'true' : undefined,
+  userId: process.env.USERID,
+  representativeName: process.env.REPRESENTATIVE_NAME,
+  connected: undefined,
+  devMode: process.env.DEV_MODE !== undefined ? process.env.DEV_MODE === 'true' : undefined,
+  apiUrl: process.env.API_URL,
+  apiRefreshInterval: process.env.API_REFRESH_INTERVAL !== undefined ? Number(process.env.API_REFRESH_INTERVAL) : undefined
 };
 
 // Try to load settings from file
@@ -35,7 +35,7 @@ try {
 }
 
 // Initialize logger with settings
-initLogger(settings.enableLogs);
+initLogger(settings.enableLogs ?? false);
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
@@ -84,7 +84,7 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
         newValue: settings.enableLogs,
         source: 'SERVER'
       });
-      initLogger(settings.enableLogs);
+      initLogger(settings.enableLogs ?? false);
     }
 
     // Handle DevTools changes
