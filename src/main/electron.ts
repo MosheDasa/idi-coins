@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, dialog, MenuItemConstructorOptions, globalShortcut, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
@@ -14,11 +14,9 @@ dotenv.config();
 let settings = {
   version: app.getVersion(),
   environment: process.env.NODE_ENV || 'development',
-  apiUrl: process.env.API_URL || 'https://api.genderize.io',
   enableLogs: true,
   userId: process.env.USERID || '',
   representativeName: 'משה כהן',
-  pollingInterval: 30,
   connected: false,
   devMode: false
 };
@@ -41,47 +39,11 @@ let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
 let aboutWindow: BrowserWindow | null = null;
 
-function createMenu() {
-  const template: MenuItemConstructorOptions[] = [
-    {
-      label: 'מידע',
-      submenu: [
-        {
-          label: 'הגדרות',
-          click: () => {
-            if (aboutWindow) {
-              aboutWindow.focus();
-            } else {
-              aboutWindow = createAboutWindow(mainWindow);
-              aboutWindow.on('closed', () => {
-                aboutWindow = null;
-              });
-            }
-          }
-        },
-        { type: 'separator' },
-        {
-          label: 'יציאה',
-          click: () => app.quit()
-        }
-      ]
-    }
-  ];
-
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
-}
-
 // IPC Handlers
-ipcMain.handle('get-api-url', () => {
-  writeLog('INFO', 'API URL requested', { url: settings.apiUrl });
-  return settings.apiUrl || 'https://api.genderize.io';
-});
-
 ipcMain.handle('get-settings', () => {
   writeLog('INFO', 'Settings requested', { settings });
-  return { 
-    ...settings, 
+  return {
+    ...settings,
     logsDirectory: settings.enableLogs ? getLogsDirectory() : '',
     configPath: settingsPath
   };
@@ -103,46 +65,21 @@ ipcMain.handle('close-window', () => {
 
 ipcMain.handle('save-settings', async (event, newSettings) => {
   writeLog('INFO', 'Saving new settings', { newSettings });
-  
   try {
-    // Update settings object
     const oldSettings = { ...settings };
-    settings = { 
-      ...settings, 
+    settings = {
+      ...settings,
       ...newSettings,
-      // Preserve version from package.json
       version: app.getVersion()
     };
-    
-    // Save to file
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
     writeLog('INFO', 'Settings saved successfully');
-    
-    // Reinitialize logger if logging setting changed
     if (oldSettings.enableLogs !== settings.enableLogs) {
-      writeLog('INFO', 'Logging setting changed', { 
-        oldValue: oldSettings.enableLogs, 
-        newValue: settings.enableLogs 
+      writeLog('INFO', 'Logging setting changed', {
+        oldValue: oldSettings.enableLogs,
+        newValue: settings.enableLogs
       });
       initLogger(settings.enableLogs);
-    }
-    
-    // Show restart dialog if critical settings changed
-    if (oldSettings.apiUrl !== settings.apiUrl || 
-        oldSettings.pollingInterval !== settings.pollingInterval) {
-      const response = await dialog.showMessageBox({
-        type: 'question',
-        buttons: ['כן', 'לא'],
-        defaultId: 0,
-        title: 'נדרשת הפעלה מחדש',
-        message: 'חלק מההגדרות דורשות הפעלה מחדש של האפליקציה. האם ברצונך להפעיל מחדש כעת?'
-      });
-      
-      if (response.response === 0) {
-        writeLog('INFO', 'User chose to restart application');
-        app.relaunch();
-        app.quit();
-      }
     }
   } catch (error: any) {
     writeLog('ERROR', 'Failed to save settings', { error: error.message });
@@ -150,7 +87,6 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
   }
 });
 
-// Add new handler for restarting the application
 ipcMain.handle('restart-app', () => {
   writeLog('INFO', 'Restarting application after settings change');
   app.relaunch();
@@ -182,24 +118,10 @@ app.whenReady().then(() => {
       }
     }, 1000);
   });
-
-  // Register keyboard shortcut
-  globalShortcut.register('CommandOrControl+Shift+Z', () => {
-    writeLog('INFO', 'Settings shortcut triggered');
-    if (aboutWindow) {
-      aboutWindow.focus();
-    } else {
-      aboutWindow = createAboutWindow(mainWindow);
-      aboutWindow.on('closed', () => {
-        aboutWindow = null;
-      });
-    }
-  });
 });
 
 app.on('will-quit', () => {
   writeLog('INFO', 'Application will quit');
-  globalShortcut.unregisterAll();
 });
 
 app.on('window-all-closed', () => {
