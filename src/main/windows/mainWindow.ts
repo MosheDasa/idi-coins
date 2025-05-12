@@ -3,7 +3,7 @@ import * as path from 'path';
 import { writeLog } from '../utils/logger';
 
 
-export function createMainWindow(): BrowserWindow {
+export function createMainWindow(devMode: boolean = false): BrowserWindow {
   writeLog('INFO', 'Creating main window');
   
   const mainWindow = new BrowserWindow({
@@ -33,6 +33,9 @@ export function createMainWindow(): BrowserWindow {
   
   mainWindow.webContents.on('did-finish-load', () => {
     writeLog('INFO', 'Main window loaded');
+    if (devMode) {
+      mainWindow.webContents.openDevTools({ mode: 'detach' });
+    }
   });
 
   mainWindow.on('closed', () => {

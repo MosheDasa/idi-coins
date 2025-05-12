@@ -74,12 +74,31 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
     };
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
     writeLog('INFO', 'Settings saved successfully');
+    
+    // Handle logging changes
     if (oldSettings.enableLogs !== settings.enableLogs) {
       writeLog('INFO', 'Logging setting changed', {
         oldValue: oldSettings.enableLogs,
         newValue: settings.enableLogs
       });
       initLogger(settings.enableLogs);
+    }
+
+    // Handle DevTools changes
+    if (oldSettings.devMode !== settings.devMode) {
+      writeLog('INFO', 'Developer mode changed', {
+        oldValue: oldSettings.devMode,
+        newValue: settings.devMode
+      });
+      
+      // Update DevTools for main window
+      if (mainWindow) {
+        if (settings.devMode) {
+          mainWindow.webContents.openDevTools({ mode: 'detach' });
+        } else {
+          mainWindow.webContents.closeDevTools();
+        }
+      }
     }
   } catch (error: any) {
     writeLog('ERROR', 'Failed to save settings', { error: error.message });
@@ -107,7 +126,7 @@ function openSettingsWindow() {
     aboutWindow.focus();
     return;
   }
-  aboutWindow = createAboutWindow(mainWindow);
+  aboutWindow = createAboutWindow(mainWindow, settings.devMode);
   aboutWindow.on('closed', () => {
     aboutWindow = null;
   });
@@ -117,7 +136,7 @@ function openSettingsWindow() {
 app.whenReady().then(() => {
   writeLog('INFO', 'Application ready');
   splashWindow = createSplashWindow();
-  mainWindow = createMainWindow();
+  mainWindow = createMainWindow(settings.devMode);
   
   // Register the global shortcut
   globalShortcut.register('CommandOrControl+Shift+Z', () => {
@@ -156,6 +175,8 @@ app.on('activate', () => {
   writeLog('INFO', 'Application activated');
   if (BrowserWindow.getAllWindows().length === 0) {
     splashWindow = createSplashWindow();
-    mainWindow = createMainWindow();
+    mainWindow = createMainWindow(settings.devMode);
+    // Open settings window if needed
+    // aboutWindow = createAboutWindow(mainWindow, settings.devMode); // Only if you want to auto-open
   }
 }); 

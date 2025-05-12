@@ -2,7 +2,7 @@ import { BrowserWindow, app } from 'electron';
 import * as path from 'path';
 import { writeLog } from '../utils/logger';
 
-export function createAboutWindow(parentWindow: BrowserWindow | null = null): BrowserWindow {
+export function createAboutWindow(parentWindow: BrowserWindow | null = null, devMode: boolean = false): BrowserWindow {
   writeLog('INFO', 'Opening settings window');
   
   const aboutWindow = new BrowserWindow({
@@ -18,11 +18,17 @@ export function createAboutWindow(parentWindow: BrowserWindow | null = null): Br
     transparent: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      devTools: true
     }
   });
 
   aboutWindow.loadFile(path.join(app.getAppPath(), 'dist/about.html'));
+
+  // Open DevTools if developer mode is enabled
+  if (devMode) {
+    aboutWindow.webContents.openDevTools({ mode: 'detach' });
+  }
 
   aboutWindow.on('closed', () => {
     writeLog('INFO', 'Settings window closed');
