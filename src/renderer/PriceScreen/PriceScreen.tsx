@@ -64,7 +64,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
     const interval = setInterval(() => {
       window.electron?.writeLog?.('DEBUG', 'Auto refresh triggered', { ...{ refreshKey }, source: 'CLIENT' });
       setRefreshKey(k => k + 1);
-    }, settings.apiRefreshInterval * 1000);
+    }, settings.apiRefreshInterval * 60 * 1000);
     return () => clearInterval(interval);
   }, [settings]);
 
