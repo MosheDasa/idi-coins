@@ -66,6 +66,8 @@ function createAboutWindow() {
     parent: mainWindow || undefined,
     modal: true,
     useContentSize: true,
+    backgroundColor: '#f5f5f5',
+    transparent: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
@@ -88,6 +90,8 @@ function createSplashWindow() {
     height: 350,
     frame: false,
     transparent: true,
+    backgroundColor: '#00ffffff',
+    show: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,
@@ -105,8 +109,9 @@ function createMainWindow() {
     icon: path.join(__dirname, '../public/icon.ico'),
     resizable: false,
     frame: true,
-    show: true,
-    transparent: true,
+    show: false,
+    backgroundColor: '#ffffff',
+    transparent: false,
     minimizable: true,
     maximizable: false,
     fullscreenable: false,
