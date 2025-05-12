@@ -8,9 +8,24 @@ import React from 'react';
 import './TopBar.css';
 
 interface TopBarProps {
+  /** Callback function triggered when the refresh button is clicked */
   onRefresh: () => void;
 }
 
+/**
+ * TopBar component that provides window controls and refresh functionality.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <TopBar onRefresh={() => console.log('Refreshing...')} />
+ * ```
+ * 
+ * @param {TopBarProps} props - Component props
+ * @param {() => void} props.onRefresh - Callback function for refresh button click
+ * 
+ * @returns {JSX.Element} A top bar with window controls and refresh button
+ */
 const TopBar: React.FC<TopBarProps> = ({ onRefresh }) => (
   <div className="top-bar">
     <button

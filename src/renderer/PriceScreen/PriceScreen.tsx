@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import TopBar from './components/TopBar/TopBar';
 import UserCard from './components/UserCard/UserCard';
 import ErrorMessage from './components/ErrorMessage/ErrorMessage';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import './PriceScreen.css';
 
 interface PriceScreenProps {
+  /** Callback function triggered when data is loaded */
   onDataLoaded?: () => void;
 }
 
@@ -22,6 +24,20 @@ const CoinIcon: React.FC = () => (
   </svg>
 );
 
+/**
+ * PriceScreen component that displays user information and handles data fetching.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <PriceScreen onDataLoaded={() => console.log('Data loaded')} />
+ * ```
+ * 
+ * @param {PriceScreenProps} props - Component props
+ * @param {() => void} [props.onDataLoaded] - Optional callback for when data is loaded
+ * 
+ * @returns {JSX.Element} The main price screen with user information
+ */
 const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
   const [settings, setSettings] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
@@ -93,7 +109,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
   }, [error]);
 
   return (
-    <>
+    <ErrorBoundary>
       <TopBar onRefresh={() => {
         window.electron?.writeLog?.('INFO', 'Refresh button clicked', { source: 'CLIENT' });
         setRefreshKey(k => k + 1);
@@ -105,7 +121,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
           user && <UserCard user={user} />
         )}
       </div>
-    </>
+    </ErrorBoundary>
   );
 };
 
