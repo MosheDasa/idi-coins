@@ -7,14 +7,14 @@ export function createAboutWindow(parentWindow: BrowserWindow | null = null): Br
   
   const aboutWindow = new BrowserWindow({
     width: 520,
-    height: 450,
+    height: 640,
     resizable: false,
     minimizable: false,
     maximizable: false,
     parent: parentWindow || undefined,
     modal: true,
     useContentSize: true,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff',
     transparent: false,
     webPreferences: {
       nodeIntegration: true,

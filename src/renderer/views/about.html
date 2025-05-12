@@ -4,15 +4,15 @@
     <title>הגדרות idi-coins</title>
     <style>
         :root {
-            --primary-color: #1a73e8;
-            --text-color: #202124;
-            --border-color: #dadce0;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-color: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
             --background-color: #ffffff;
-            --hover-color: #1557b0;
-            --disabled-color: #5f6368;
-            --error-color: #d93025;
-            --success-color: #1e8e3e;
-            --warning-color: #f29900;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
         }
 
         html, body {
@@ -27,59 +27,47 @@
         }
 
         .container {
-            padding: 24px;
-            height: 450px;
-            box-sizing: border-box;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            gap: 20px;
         }
 
         .header {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            padding-bottom: 16px;
+            padding: 32px 32px 24px;
             border-bottom: 1px solid var(--border-color);
         }
 
-        .header-top {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .title-section {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .header-content {
+            max-width: 456px;
+            margin: 0 auto;
         }
 
         h2 {
             margin: 0;
-            font-size: 22px;
-            font-weight: 400;
+            font-size: 24px;
+            font-weight: 600;
             color: var(--text-color);
+            margin-bottom: 8px;
         }
 
-        .header-info {
+        .header-meta {
             display: flex;
             align-items: center;
-            gap: 12px;
-        }
-
-        .version {
+            gap: 16px;
+            color: var(--text-secondary);
             font-size: 14px;
-            color: var(--disabled-color);
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
 
-        .environment-tag {
-            background-color: #ffd700;
-            color: #000;
-            padding: 2px 8px;
+        .version-tag {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .env-tag {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 2px 10px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: 500;
@@ -90,61 +78,66 @@
             height: 8px;
             border-radius: 50%;
             background-color: var(--error-color);
-            transition: background-color 0.3s ease;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
         }
 
         .status-dot.connected {
             background-color: var(--success-color);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
         }
 
-        .config-section {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 16px 24px;
-            align-items: center;
+        .main-content {
+            flex: 1;
+            padding: 24px 32px;
+            overflow-y: auto;
         }
 
-        .config-label {
-            color: var(--text-color);
+        .settings-container {
+            max-width: 456px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .setting-label {
             font-size: 14px;
             font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .config-value {
-            font-size: 14px;
-            color: var(--primary-color);
-            word-break: break-all;
+            color: var(--text-color);
         }
 
         input[type="text"] {
-            padding: 8px 12px;
+            width: 100%;
+            padding: 10px 12px;
             border: 1px solid var(--border-color);
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 14px;
             color: var(--text-color);
-            direction: ltr;
+            background: var(--background-color);
             transition: all 0.2s ease;
+            box-sizing: border-box;
         }
 
-        .user-id-input {
-            width: 120px;
-        }
-
-        .api-url-input {
-            width: 100%;
+        input[type="text"]:hover {
+            border-color: #94a3b8;
         }
 
         input[type="text"]:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(26,115,232,0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .switch-container {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
 
         .switch {
@@ -167,7 +160,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: var(--disabled-color);
+            background-color: var(--text-secondary);
             transition: .2s;
             border-radius: 20px;
         }
@@ -195,36 +188,39 @@
         .path-container {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background-color: #f8f9fa;
-            padding: 8px;
-            border-radius: 4px;
-            transition: background-color 0.2s ease;
-        }
-
-        .path-container:hover {
-            background-color: #f1f3f4;
+            gap: 12px;
+            padding: 10px 12px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            transition: all 0.2s ease;
         }
 
         .path-text {
             flex: 1;
-            font-family: monospace;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-size: 13px;
-            color: var(--disabled-color);
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .button-group {
-            margin-top: auto;
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            padding-top: 16px;
+        .footer {
+            padding: 24px 32px;
+            background-color: #f8fafc;
             border-top: 1px solid var(--border-color);
         }
 
+        .footer-content {
+            max-width: 456px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: flex-end;
+        }
+
         .button {
-            padding: 8px 24px;
-            border-radius: 4px;
+            padding: 10px 20px;
+            border-radius: 8px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
@@ -236,23 +232,24 @@
         .primary-button {
             background-color: var(--primary-color);
             color: white;
-            min-width: 100px;
+            min-width: 120px;
         }
 
         .primary-button:hover {
-            background-color: var(--hover-color);
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
         }
 
         .secondary-button {
-            background-color: transparent;
+            background-color: white;
             color: var(--primary-color);
             border: 1px solid var(--border-color);
-            padding: 4px 12px;
+            padding: 6px 12px;
             font-size: 13px;
         }
 
         .secondary-button:hover {
-            background-color: rgba(26,115,232,0.04);
+            background-color: #f8fafc;
             border-color: var(--primary-color);
         }
 
@@ -264,10 +261,10 @@
             background-color: var(--success-color);
             color: white;
             padding: 12px 24px;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 14px;
             z-index: 1000;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             animation: slideUp 0.3s ease;
         }
 
@@ -285,54 +282,68 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="header-top">
-                <div class="title-section">
-                    <h2>IDI COINS</h2>
-                    <div class="header-info">
-                        <div class="version">Version <span id="version">loading...</span></div>
-                        <div class="environment-tag" id="environment">Development</div>
-                        <div class="status-dot" id="connectionStatus"></div>
+        <header class="header">
+            <div class="header-content">
+                <h2>הגדרות מערכת</h2>
+                <div class="header-meta">
+                    <div class="version-tag">
+                        גרסה <span id="version">loading...</span>
+                    </div>
+                    <div class="env-tag" id="environment">Development</div>
+                    <div class="status-dot" id="connectionStatus"></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="settings-container">
+                <div class="setting-item">
+                    <div class="setting-label">מזהה נציג</div>
+                    <input type="text" id="userId" placeholder="הכנס מזהה" />
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">כתובת API</div>
+                    <input type="text" id="apiUrl" placeholder="הכנס כתובת API" dir="ltr" />
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">רישום לוגים</div>
+                    <div class="switch-container">
+                        <label class="switch">
+                            <input type="checkbox" id="enableLogs">
+                            <span class="slider"></span>
+                        </label>
+                        <span>מופעל</span>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">נתיב קובץ הלוגים</div>
+                    <div class="path-container">
+                        <div class="path-text" id="configPath" dir="ltr">loading...</div>
+                        <button class="button secondary-button" onclick="openLogsDirectory()">פתח</button>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">מצב מפתח</div>
+                    <div class="switch-container">
+                        <label class="switch">
+                            <input type="checkbox" id="devMode">
+                            <span class="slider"></span>
+                        </label>
+                        <span>מופעל</span>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
 
-        <div class="config-section">
-            <div class="config-label">מזהה נציג</div>
-            <input type="text" id="userId" placeholder="הכנס מזהה" class="user-id-input" />
-
-            <div class="config-label">כתובת API</div>
-            <input type="text" id="apiUrl" placeholder="הכנס כתובת API" dir="ltr" class="api-url-input" />
-
-            <div class="config-label">רישום לוגים</div>
-            <div class="switch-container">
-                <label class="switch">
-                    <input type="checkbox" id="enableLogs">
-                    <span class="slider"></span>
-                </label>
-                <span>מופעל</span>
+        <footer class="footer">
+            <div class="footer-content">
+                <button class="button primary-button" onclick="saveSettings()">שמור שינויים</button>
             </div>
-
-            <div class="config-label">מצב מפתח</div>
-            <div class="switch-container">
-                <label class="switch">
-                    <input type="checkbox" id="devMode">
-                    <span class="slider"></span>
-                </label>
-                <span>מופעל</span>
-            </div>
-
-            <div class="config-label">נתיב קובץ הלוגים</div>
-            <div class="path-container">
-                <div class="path-text" id="configPath" dir="ltr">loading...</div>
-                <button class="button secondary-button" onclick="openLogsDirectory()">פתח</button>
-            </div>
-        </div>
-
-        <div class="button-group">
-            <button class="button primary-button" onclick="saveSettings()">שמור</button>
-        </div>
+        </footer>
     </div>
 
     <script>
@@ -378,9 +389,7 @@
                 toast.textContent = 'ההגדרות נשמרו בהצלחה! מפעיל מחדש...';
                 document.body.appendChild(toast);
                 
-                // Wait for the toast to be visible
                 setTimeout(async () => {
-                    // Restart the application
                     await ipcRenderer.invoke('restart-app');
                 }, 1000);
             } catch (error) {
