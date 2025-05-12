@@ -1,0 +1,39 @@
+.user-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  direction: rtl;
+}
+
+.user-card img {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+  border: 4px solid #fbbf24;
+}
+
+.user-card h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.user-card p {
+  margin: 0.5rem 0;
+  color: #64748b;
+}
+
+.user-card .email {
+  color: #0ea5e9;
+  text-decoration: none;
+}
+
+.user-card .email:hover {
+  text-decoration: underline;
+} 

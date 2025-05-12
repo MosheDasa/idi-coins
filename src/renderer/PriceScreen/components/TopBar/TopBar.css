@@ -1,0 +1,42 @@
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 8px;
+  -webkit-app-region: drag;
+  z-index: 1000;
+}
+
+.top-bar button {
+  -webkit-app-region: no-drag;
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.top-bar button:hover {
+  color: #1e293b;
+}
+
+.top-bar .refresh-button {
+  margin-right: auto;
+  margin-left: 8px;
+}
+
+.top-bar .window-controls {
+  display: flex;
+  gap: 4px;
+} 

@@ -1,0 +1,23 @@
+.error-message {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #dc2626;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  direction: rtl;
+}
+
+.error-message h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.error-message p {
+  margin: 0;
+  font-size: 0.875rem;
+  opacity: 0.9;
+} 
