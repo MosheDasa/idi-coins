@@ -56,6 +56,7 @@
             gap: 16px;
             color: var(--text-secondary);
             font-size: 14px;
+            flex-direction: row-reverse;
         }
 
         .version-tag {
@@ -139,6 +140,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-direction: row-reverse;
         }
 
         .switch {
@@ -217,7 +219,7 @@
             max-width: 456px;
             margin: 0 auto;
             display: flex;
-            justify-content: flex-end;
+            justify-content: flex-start;
         }
 
         .button {
@@ -301,7 +303,7 @@
             <div class="settings-container">
                 <div class="setting-item">
                     <div class="setting-label">מזהה נציג</div>
-                    <input type="text" id="userId" placeholder="הכנס מזהה" />
+                    <input type="text" id="userId" placeholder="הכנס מזהה נציג" dir="rtl" />
                 </div>
 
                 <div class="setting-item">
@@ -361,12 +363,16 @@
             // Display non-editable fields
             document.getElementById('version').textContent = settings.version;
             document.getElementById('environment').textContent = 
-                settings.environment === 'development' ? 'Development' : 'Production';
+                settings.environment === 'development' ? 'פיתוח' : 'ייצור';
             document.getElementById('configPath').textContent = settings.configPath || '---';
 
             // Update connection status
+            const statusDot = document.getElementById('connectionStatus');
             if (settings.connected) {
-                document.getElementById('connectionStatus').classList.add('connected');
+                statusDot.classList.add('connected');
+                statusDot.title = 'מחובר';
+            } else {
+                statusDot.title = 'לא מחובר';
             }
             
             // Set editable fields

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, globalShortcut } from 'electron';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
@@ -101,10 +101,29 @@ ipcMain.handle('open-logs-directory', () => {
   }
 });
 
+// Function to open settings window
+function openSettingsWindow() {
+  if (aboutWindow) {
+    aboutWindow.focus();
+    return;
+  }
+  aboutWindow = createAboutWindow(mainWindow);
+  aboutWindow.on('closed', () => {
+    aboutWindow = null;
+  });
+}
+
+// Register global shortcut
 app.whenReady().then(() => {
   writeLog('INFO', 'Application ready');
   splashWindow = createSplashWindow();
   mainWindow = createMainWindow();
+  
+  // Register the global shortcut
+  globalShortcut.register('CommandOrControl+Shift+Z', () => {
+    writeLog('INFO', 'Settings shortcut triggered');
+    openSettingsWindow();
+  });
   
   // Show main window when loaded
   mainWindow.webContents.on('did-finish-load', () => {
@@ -120,8 +139,10 @@ app.whenReady().then(() => {
   });
 });
 
+// Clean up shortcuts when app quits
 app.on('will-quit', () => {
   writeLog('INFO', 'Application will quit');
+  globalShortcut.unregisterAll();
 });
 
 app.on('window-all-closed', () => {
