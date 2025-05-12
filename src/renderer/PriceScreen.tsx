@@ -16,6 +16,7 @@ declare global {
   interface Window {
     electron: {
       getApiUrl: () => Promise<string>;
+      getSettings: () => Promise<any>;
       minimize: () => void;
       close: () => void;
     }
@@ -26,12 +27,24 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
   const [genderData, setGenderData] = useState<GenderData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [settings, setSettings] = useState<any>(null);
+
+  const fetchSettings = async () => {
+    try {
+      const settingsData = await window.electron.getSettings();
+      setSettings(settingsData);
+      return settingsData;
+    } catch (err) {
+      console.error('Error fetching settings:', err);
+      return null;
+    }
+  };
 
   const fetchGenderData = async () => {
     try {
       setIsLoading(true);
       const apiUrl = await window.electron.getApiUrl();
-      console.log('dasaAPI URL:', apiUrl);
+      console.log('API URL:', apiUrl);
 
       if (!apiUrl) {
         throw new Error('API URL is not configured');
@@ -50,7 +63,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
       }
       
       const data = await response.json();
-      console.log('dasa Received data:', data);
+      console.log('Received data:', data);
 
       setGenderData(data);
       setError(null);
@@ -68,9 +81,16 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
 
   useEffect(() => {
     console.log('Component mounted, fetching data...');
-    fetchGenderData();
-    const interval = setInterval(fetchGenderData, 30000);
-    return () => clearInterval(interval);
+    const initialize = async () => {
+      const settingsData = await fetchSettings();
+      await fetchGenderData();
+      
+      // Set up polling interval based on settings
+      const interval = setInterval(fetchGenderData, (settingsData?.pollingInterval || 30) * 1000);
+      return () => clearInterval(interval);
+    };
+    
+    initialize();
   }, []);
 
   if (error) {
@@ -182,7 +202,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
           }
         `}</style>
 
-        <p>נציג: משה כהן</p>
+        <p>נציג: {settings?.representativeName || 'לא מוגדר'}</p>
         {isLoading || !genderData ? (
           <div style={{
             display: 'flex', 

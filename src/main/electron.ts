@@ -2,7 +2,10 @@ import { app, BrowserWindow, ipcMain, Menu, dialog, MenuItemConstructorOptions, 
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
-import { initLogger, writeLog, getLogsDirectory } from './logger';
+import { initLogger, writeLog, getLogsDirectory } from './utils/logger';
+import { createMainWindow } from './windows/mainWindow';
+import { createSplashWindow } from './windows/splashWindow';
+import { createAboutWindow } from './windows/aboutWindow';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -12,7 +15,12 @@ let settings = {
   version: app.getVersion(),
   environment: process.env.NODE_ENV || 'development',
   apiUrl: process.env.API_URL || 'https://api.genderize.io',
-  enableLogs: true
+  enableLogs: true,
+  userId: process.env.USERID || '',
+  representativeName: 'משה כהן',
+  pollingInterval: 30,
+  connected: false,
+  devMode: false
 };
 
 // Try to load settings from file
@@ -40,7 +48,16 @@ function createMenu() {
       submenu: [
         {
           label: 'הגדרות',
-          click: createAboutWindow
+          click: () => {
+            if (aboutWindow) {
+              aboutWindow.focus();
+            } else {
+              aboutWindow = createAboutWindow(mainWindow);
+              aboutWindow.on('closed', () => {
+                aboutWindow = null;
+              });
+            }
+          }
         },
         { type: 'separator' },
         {
@@ -55,111 +72,6 @@ function createMenu() {
   Menu.setApplicationMenu(menu);
 }
 
-function createAboutWindow() {
-  writeLog('INFO', 'Opening settings window');
-  
-  if (aboutWindow) {
-    aboutWindow.focus();
-    writeLog('INFO', 'Settings window focused (already open)');
-    return;
-  }
-
-  aboutWindow = new BrowserWindow({
-    width: 520,
-    height: 450,
-    resizable: false,
-    minimizable: false,
-    maximizable: false,
-    parent: mainWindow || undefined,
-    modal: true,
-    useContentSize: true,
-    backgroundColor: '#f5f5f5',
-    transparent: false,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
-    }
-  });
-
-  aboutWindow.loadFile(path.join(__dirname, 'about.html'));
-
-  aboutWindow.on('closed', () => {
-    writeLog('INFO', 'Settings window closed');
-    aboutWindow = null;
-  });
-
-  aboutWindow.removeMenu();
-}
-
-function createSplashWindow() {
-  writeLog('INFO', 'Creating splash window');
-  
-  splashWindow = new BrowserWindow({
-    width: 500,
-    height: 350,
-    frame: false,
-    transparent: true,
-    backgroundColor: '#00ffffff',
-    show: true,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
-    }
-  });
-
-  splashWindow.loadFile(path.join(__dirname, 'splash.html'));
-}
-
-function createMainWindow() {
-  writeLog('INFO', 'Creating main window');
-  
-  mainWindow = new BrowserWindow({
-    width: 500,
-    height: 350,
-    icon: path.join(__dirname, '../public/icon.ico'),
-    resizable: false,
-    frame: false,
-    show: false,
-    backgroundColor: '#ffffff',
-    transparent: false,
-    minimizable: true,
-    maximizable: false,
-    fullscreenable: false,
-    closable: true,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
-    }
-  });
-
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
-  
-  // Remove menu
-  mainWindow.removeMenu();
-  
-  mainWindow.webContents.on('did-finish-load', () => {
-    writeLog('INFO', 'Main window loaded');
-    setTimeout(() => {
-      if (splashWindow) {
-        splashWindow.close();
-        splashWindow = null;
-        writeLog('INFO', 'Splash window closed');
-      }
-      if (mainWindow) {
-        mainWindow.show();
-        writeLog('INFO', 'Main window shown');
-      }
-    }, 1000);
-  });
-
-  mainWindow.on('closed', () => {
-    writeLog('INFO', 'Main window closed');
-    mainWindow = null;
-  });
-}
-
 // IPC Handlers
 ipcMain.handle('get-api-url', () => {
   writeLog('INFO', 'API URL requested', { url: settings.apiUrl });
@@ -168,8 +80,11 @@ ipcMain.handle('get-api-url', () => {
 
 ipcMain.handle('get-settings', () => {
   writeLog('INFO', 'Settings requested', { settings });
-  const logsDir = settings.enableLogs ? getLogsDirectory() : '';
-  return { ...settings, logsDirectory: logsDir };
+  return { 
+    ...settings, 
+    logsDirectory: settings.enableLogs ? getLogsDirectory() : '',
+    configPath: settingsPath
+  };
 });
 
 ipcMain.handle('minimize-window', () => {
@@ -212,24 +127,34 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
       initLogger(settings.enableLogs);
     }
     
-    // Show restart dialog
-    const response = await dialog.showMessageBox({
-      type: 'question',
-      buttons: ['כן', 'לא'],
-      defaultId: 0,
-      title: 'נדרשת הפעלה מחדש',
-      message: 'חלק מההגדרות דורשות הפעלה מחדש של האפליקציה. האם ברצונך להפעיל מחדש כעת?'
-    });
-    
-    if (response.response === 0) {
-      writeLog('INFO', 'User chose to restart application');
-      app.relaunch();
-      app.quit();
+    // Show restart dialog if critical settings changed
+    if (oldSettings.apiUrl !== settings.apiUrl || 
+        oldSettings.pollingInterval !== settings.pollingInterval) {
+      const response = await dialog.showMessageBox({
+        type: 'question',
+        buttons: ['כן', 'לא'],
+        defaultId: 0,
+        title: 'נדרשת הפעלה מחדש',
+        message: 'חלק מההגדרות דורשות הפעלה מחדש של האפליקציה. האם ברצונך להפעיל מחדש כעת?'
+      });
+      
+      if (response.response === 0) {
+        writeLog('INFO', 'User chose to restart application');
+        app.relaunch();
+        app.quit();
+      }
     }
   } catch (error: any) {
     writeLog('ERROR', 'Failed to save settings', { error: error.message });
     throw error;
   }
+});
+
+// Add new handler for restarting the application
+ipcMain.handle('restart-app', () => {
+  writeLog('INFO', 'Restarting application after settings change');
+  app.relaunch();
+  app.quit();
 });
 
 ipcMain.handle('open-logs-directory', () => {
@@ -242,13 +167,33 @@ ipcMain.handle('open-logs-directory', () => {
 
 app.whenReady().then(() => {
   writeLog('INFO', 'Application ready');
-  createSplashWindow();
-  createMainWindow();
+  splashWindow = createSplashWindow();
+  mainWindow = createMainWindow();
   
+  // Show main window when loaded
+  mainWindow.webContents.on('did-finish-load', () => {
+    setTimeout(() => {
+      if (splashWindow) {
+        splashWindow.close();
+        splashWindow = null;
+      }
+      if (mainWindow) {
+        mainWindow.show();
+      }
+    }, 1000);
+  });
+
   // Register keyboard shortcut
   globalShortcut.register('CommandOrControl+Shift+Z', () => {
     writeLog('INFO', 'Settings shortcut triggered');
-    createAboutWindow();
+    if (aboutWindow) {
+      aboutWindow.focus();
+    } else {
+      aboutWindow = createAboutWindow(mainWindow);
+      aboutWindow.on('closed', () => {
+        aboutWindow = null;
+      });
+    }
   });
 });
 
@@ -267,7 +212,7 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   writeLog('INFO', 'Application activated');
   if (BrowserWindow.getAllWindows().length === 0) {
-    createSplashWindow();
-    createMainWindow();
+    splashWindow = createSplashWindow();
+    mainWindow = createMainWindow();
   }
 }); 

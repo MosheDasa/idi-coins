@@ -1,21 +1,13 @@
 import path from 'path';
+import { Configuration, DefinePlugin } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
-import { Configuration, DefinePlugin } from 'webpack';
-import * as dotenv from 'dotenv';
 
 // Load environment variables
-const env = dotenv.config().parsed || {};
-
-// Create a string that will be replaced at build time
-const envKeys = Object.keys(env).reduce((prev, next) => {
-  if (next !== 'NODE_ENV') { // Skip NODE_ENV as it's handled by webpack mode
-    prev[`process.env.${next}`] = JSON.stringify(env[next]);
-  }
-  return prev;
-}, {} as { [key: string]: string });
+const envKeys = {};
 
 interface WebpackConfig extends Configuration {
+  entry: any;
   target?: string;
 }
 
@@ -23,7 +15,7 @@ const mainConfig: WebpackConfig = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   entry: {
     main: './src/main/electron.ts',
-    preload: './src/main/preload.ts'
+    preload: './src/main/config/preload.ts'
   },
   target: 'electron-main',
   output: {
@@ -45,9 +37,9 @@ const mainConfig: WebpackConfig = {
   plugins: [
     new CopyPlugin({
       patterns: [
-        { from: 'src/main/index.html', to: 'index.html' },
-        { from: 'src/main/splash.html', to: 'splash.html' },
-        { from: 'src/main/about.html', to: 'about.html' }
+        { from: 'src/renderer/views/index.html', to: 'index.html' },
+        { from: 'src/renderer/views/splash.html', to: 'splash.html' },
+        { from: 'src/renderer/views/about.html', to: 'about.html' }
       ],
     }),
     new DefinePlugin({
@@ -87,7 +79,7 @@ const rendererConfig: WebpackConfig = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/main/index.html')
+      template: path.resolve(__dirname, 'src/renderer/views/index.html')
     }),
     new DefinePlugin({
       ...envKeys,
