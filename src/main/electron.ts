@@ -1,20 +1,86 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, dialog, MenuItemConstructorOptions } from 'electron';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
+import * as fs from 'fs';
 
 // Load environment variables from .env file
 dotenv.config();
 
-// Get API URL from .env
-const API_URL = process.env.API_URL;
-console.log('Loading with API URL:', API_URL);
+// Settings management
+let settings = {
+  version: app.getVersion(),
+  environment: process.env.NODE_ENV || 'development',
+  apiUrl: process.env.API_URL || 'https://api.genderize.io',
+  enableLogs: true
+};
 
-if (!API_URL) {
-  console.error('Warning: API_URL is not set in .env file');
+// Try to load settings from file
+const settingsPath = path.join(app.getPath('userData'), 'settings.json');
+try {
+  if (fs.existsSync(settingsPath)) {
+    const savedSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    settings = { ...settings, ...savedSettings };
+  }
+} catch (err) {
+  console.error('Error loading settings:', err);
 }
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
+let aboutWindow: BrowserWindow | null = null;
+
+function createMenu() {
+  const template: MenuItemConstructorOptions[] = [
+    {
+      label: 'מידע',
+      submenu: [
+        {
+          label: 'הגדרות',
+          click: createAboutWindow
+        },
+        { type: 'separator' },
+        {
+          label: 'יציאה',
+          click: () => app.quit()
+        }
+      ]
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
+function createAboutWindow() {
+  if (aboutWindow) {
+    aboutWindow.focus();
+    return;
+  }
+
+  aboutWindow = new BrowserWindow({
+    width: 520,
+    height: 450,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    parent: mainWindow || undefined,
+    modal: true,
+    useContentSize: true,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
+  });
+
+  aboutWindow.loadFile(path.join(__dirname, 'about.html'));
+
+  aboutWindow.on('closed', () => {
+    aboutWindow = null;
+  });
+
+  // Remove the menu from the about window
+  aboutWindow.removeMenu();
+}
 
 function createSplashWindow() {
   splashWindow = new BrowserWindow({
@@ -52,17 +118,6 @@ function createMainWindow() {
     }
   });
 
-  // Set up IPC handler for API URL
-  ipcMain.handle('get-api-url', () => {
-    console.log('dasa Renderer requested API URL, returning:', API_URL);
-    if (!API_URL) {
-      throw new Error('API_URL is not configured in .env file');
-    }
-    return API_URL;
-  });
-
-  mainWindow.removeMenu();
-
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
   
   mainWindow.webContents.on('did-finish-load', () => {
@@ -78,7 +133,50 @@ function createMainWindow() {
   });
 }
 
+// IPC Handlers
+ipcMain.handle('get-api-url', () => {
+  if (settings.enableLogs) {
+    console.log('Renderer requested API URL, returning:', settings.apiUrl);
+  }
+  return settings.apiUrl || 'https://api.genderize.io';
+});
+
+ipcMain.handle('get-settings', () => settings);
+
+ipcMain.handle('save-settings', async (event, newSettings) => {
+  // Update settings object
+  settings = { 
+    ...settings, 
+    ...newSettings,
+    // Preserve version from package.json
+    version: app.getVersion()
+  };
+  
+  // Save to file
+  try {
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    
+    // Show restart dialog
+    const response = await dialog.showMessageBox({
+      type: 'question',
+      buttons: ['כן', 'לא'],
+      defaultId: 0,
+      title: 'נדרשת הפעלה מחדש',
+      message: 'חלק מההגדרות דורשות הפעלה מחדש של האפליקציה. האם ברצונך להפעיל מחדש כעת?'
+    });
+    
+    if (response.response === 0) {
+      app.relaunch();
+      app.quit();
+    }
+  } catch (err) {
+    console.error('Error saving settings:', err);
+    throw err;
+  }
+});
+
 app.whenReady().then(() => {
+  createMenu();
   createSplashWindow();
   createMainWindow();
 });

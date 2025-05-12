@@ -9,7 +9,9 @@ const env = dotenv.config().parsed || {};
 
 // Create a string that will be replaced at build time
 const envKeys = Object.keys(env).reduce((prev, next) => {
-  prev[`process.env.${next}`] = JSON.stringify(env[next]);
+  if (next !== 'NODE_ENV') { // Skip NODE_ENV as it's handled by webpack mode
+    prev[`process.env.${next}`] = JSON.stringify(env[next]);
+  }
   return prev;
 }, {} as { [key: string]: string });
 
@@ -44,10 +46,14 @@ const mainConfig: WebpackConfig = {
     new CopyPlugin({
       patterns: [
         { from: 'src/main/index.html', to: 'index.html' },
-        { from: 'src/main/splash.html', to: 'splash.html' }
+        { from: 'src/main/splash.html', to: 'splash.html' },
+        { from: 'src/main/about.html', to: 'about.html' }
       ],
     }),
-    new DefinePlugin(envKeys)
+    new DefinePlugin({
+      ...envKeys,
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
+    })
   ],
   node: {
     __dirname: false,
@@ -83,7 +89,10 @@ const rendererConfig: WebpackConfig = {
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'src/main/index.html')
     }),
-    new DefinePlugin(envKeys)
+    new DefinePlugin({
+      ...envKeys,
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
+    })
   ]
 };
 

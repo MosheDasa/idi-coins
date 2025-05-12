@@ -8,9 +8,9 @@
     "build": "cross-env NODE_ENV=production webpack --config webpack.config.ts",
     "package": "electron-builder --win",
     "clean": "rimraf dist && rimraf release",
-    "full-run": "npm run clean && npm run build && npm run start",
-    "full-run-dev": "npm run build && npm run start",
-    "full-run-win": "npm run version:patch && rimraf release && cross-env API_URL=https://api.genderize.io NODE_ENV=production npm run build && npm run package -- --win",
+    "full-run": "npm run clean && cross-env NODE_ENV=development npm run build && npm run start",
+    "full-run-dev": "cross-env NODE_ENV=development npm run build && npm run start",
+    "full-run-win": "npm run version:patch && rimraf release && cross-env NODE_ENV=production npm run build && npm run package -- --win",
     "version:patch": "npm version patch --no-git-tag-version"
   },
   "build": {
