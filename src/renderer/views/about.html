@@ -77,19 +77,6 @@
             font-weight: 500;
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--error-color);
-            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
-        }
-
-        .status-dot.connected {
-            background-color: var(--success-color);
-            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-        }
-
         .main-content {
             flex: 1 0 auto;
             padding: 24px 32px 0 32px;
@@ -302,7 +289,6 @@
                         גרסה <span id="version">loading...</span>
                     </div>
                     <div class="env-tag" id="environment">Development</div>
-                    <div class="status-dot" id="connectionStatus"></div>
                 </div>
             </div>
         </header>
@@ -371,17 +357,8 @@
             // Display non-editable fields
             document.getElementById('version').textContent = settings.version;
             document.getElementById('environment').textContent = 
-                settings.environment === 'development' ? 'פיתוח' : 'ייצור';
+                settings.environment === 'development' ? 'Development' : 'Production';
             document.getElementById('configPath').textContent = settings.configPath || '---';
-
-            // Update connection status
-            const statusDot = document.getElementById('connectionStatus');
-            if (settings.connected) {
-                statusDot.classList.add('connected');
-                statusDot.title = 'מחובר';
-            } else {
-                statusDot.title = 'לא מחובר';
-            }
             
             // Set editable fields
             document.getElementById('userId').value = settings.userId || '';
