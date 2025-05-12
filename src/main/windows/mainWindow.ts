@@ -4,7 +4,7 @@ import { writeLog } from '../utils/logger';
 
 
 export function createMainWindow(devMode: boolean = false): BrowserWindow {
-  writeLog('INFO', 'Creating main window');
+  writeLog('INFO', 'Creating main window', { source: 'SERVER' });
   
   const mainWindow = new BrowserWindow({
     width: 500,
@@ -32,14 +32,14 @@ export function createMainWindow(devMode: boolean = false): BrowserWindow {
   mainWindow.removeMenu();
   
   mainWindow.webContents.on('did-finish-load', () => {
-    writeLog('INFO', 'Main window loaded');
+    writeLog('INFO', 'Main window loaded', { source: 'SERVER' });
     if (devMode) {
       mainWindow.webContents.openDevTools({ mode: 'detach' });
     }
   });
 
   mainWindow.on('closed', () => {
-    writeLog('INFO', 'Main window closed');
+    writeLog('INFO', 'Main window closed', { source: 'SERVER' });
   });
 
   return mainWindow;

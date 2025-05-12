@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld(
     saveSettings: (settings: any) => ipcRenderer.invoke('save-settings', settings),
     minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
     closeWindow: () => ipcRenderer.invoke('close-window'),
-    openLogsDirectory: () => ipcRenderer.invoke('open-logs-directory')
+    openLogsDirectory: () => ipcRenderer.invoke('open-logs-directory'),
+    writeLog: (level: string, message: string, data?: any) => ipcRenderer.invoke('write-log', level, message, data)
   }
 ); 

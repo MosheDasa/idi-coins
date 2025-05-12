@@ -29,10 +29,10 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
     (async () => {
       if (window.electron?.getSettings) {
         const s = await window.electron.getSettings();
-        console.log('[IDI-COINS] Loaded settings:', s);
+        window.electron?.writeLog?.('INFO', 'Loaded settings', { ...{ settings: s }, source: 'CLIENT' });
         setSettings(s);
       } else {
-        console.warn('[IDI-COINS] window.electron?.getSettings is not available');
+        window.electron?.writeLog?.('ERROR', 'window.electron?.getSettings is not available', { source: 'CLIENT' });
       }
     })();
   }, []);
@@ -42,6 +42,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
     if (!settings) return;
     if (!settings.apiRefreshInterval || isNaN(settings.apiRefreshInterval)) return;
     const interval = setInterval(() => {
+      window.electron?.writeLog?.('DEBUG', 'Auto refresh triggered', { ...{ refreshKey }, source: 'CLIENT' });
       setRefreshKey(k => k + 1);
     }, settings.apiRefreshInterval * 1000);
     return () => clearInterval(interval);
@@ -49,34 +50,43 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
 
   // Fetch user only after settings are loaded or refreshKey changes
   useEffect(() => {
+    window.electron?.writeLog?.('DEBUG', 'API fetch triggered', { ...{ refreshKey }, source: 'CLIENT' });
     if (!settings) {
-      console.warn('[IDI-COINS] Settings not loaded yet, skipping API fetch');
+      window.electron?.writeLog?.('ERROR', 'Settings not loaded yet, skipping API fetch', { source: 'CLIENT' });
       return;
     }
     (async () => {
       try {
         const apiUrl = (settings.apiUrl && settings.apiUrl.trim()) ? settings.apiUrl : 'https://randomuser.me/api/';
-        console.log('[IDI-COINS] Fetching user from API:', apiUrl);
+        window.electron?.writeLog?.('INFO', 'Fetching user from API', { ...{ apiUrl }, source: 'CLIENT' });
         const res = await fetch(apiUrl);
-        console.log('[IDI-COINS] Fetch response:', res);
+        window.electron?.writeLog?.('DEBUG', 'Fetch response', { ...{ status: res.status, statusText: res.statusText }, source: 'CLIENT' });
         if (!res.ok) {
           const text = await res.text();
+          window.electron?.writeLog?.('ERROR', 'API Error', { ...{ status: res.status, statusText: res.statusText, text }, source: 'CLIENT' });
           setError(`API Error: ${res.status} ${res.statusText} - ${text}`);
           setUser(null);
           return;
         }
         const data = await res.json();
-        console.log('[IDI-COINS] API response data:', data);
+        window.electron?.writeLog?.('INFO', 'API response data', { ...{ data }, source: 'CLIENT' });
         setUser(data.results[0]);
         setError(null);
       } catch (e: any) {
-        console.error('[IDI-COINS] Fetch error:', e);
+        window.electron?.writeLog?.('ERROR', 'Fetch error', { ...{ error: e.message || e.toString() }, source: 'CLIENT' });
         setError(`Network/API Error: ${e.message || e.toString()}`);
         setUser(null);
       }
       if (onDataLoaded) onDataLoaded();
     })();
   }, [settings, onDataLoaded, refreshKey]);
+
+  // Log UI-rendered errors
+  useEffect(() => {
+    if (error) {
+      window.electron?.writeLog?.('ERROR', 'UI Rendered Error', { error, source: 'CLIENT' });
+    }
+  }, [error]);
 
   return (
     <>
@@ -137,7 +147,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
           title="רענן"
           style={{ marginLeft: 8, zIndex: 1000 }}
           onClick={() => {
-            console.log('[IDI-COINS] Refresh button clicked');
+            window.electron?.writeLog?.('INFO', 'Refresh button clicked', { source: 'CLIENT' });
             setRefreshKey(k => k + 1);
           }}
         >

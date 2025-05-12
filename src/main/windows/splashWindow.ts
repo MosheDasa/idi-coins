@@ -3,7 +3,7 @@ import * as path from 'path';
 import { writeLog } from '../utils/logger';
 
 export function createSplashWindow(): BrowserWindow {
-  writeLog('INFO', 'Creating splash window');
+  writeLog('INFO', 'Creating splash window', { source: 'SERVER' });
   
   const splashWindow = new BrowserWindow({
     width: 500,

@@ -43,7 +43,7 @@ let aboutWindow: BrowserWindow | null = null;
 
 // IPC Handlers
 ipcMain.handle('get-settings', () => {
-  writeLog('INFO', 'Settings requested', { settings });
+  writeLog('INFO', 'Settings requested', { settings, source: 'SERVER' });
   return {
     ...settings,
     logsDirectory: settings.enableLogs ? getLogsDirectory() : '',
@@ -53,20 +53,20 @@ ipcMain.handle('get-settings', () => {
 
 ipcMain.handle('minimize-window', () => {
   if (mainWindow) {
-    writeLog('INFO', 'Window minimized');
+    writeLog('INFO', 'Window minimized', { source: 'SERVER' });
     mainWindow.minimize();
   }
 });
 
 ipcMain.handle('close-window', () => {
   if (mainWindow) {
-    writeLog('INFO', 'Window closed by user');
+    writeLog('INFO', 'Window closed by user', { source: 'SERVER' });
     mainWindow.close();
   }
 });
 
 ipcMain.handle('save-settings', async (event, newSettings) => {
-  writeLog('INFO', 'Saving new settings', { newSettings });
+  writeLog('INFO', 'Saving new settings', { newSettings, source: 'SERVER' });
   try {
     const oldSettings = { ...settings };
     settings = {
@@ -75,13 +75,14 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
       version: app.getVersion()
     };
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
-    writeLog('INFO', 'Settings saved successfully');
+    writeLog('INFO', 'Settings saved successfully', { source: 'SERVER' });
     
     // Handle logging changes
     if (oldSettings.enableLogs !== settings.enableLogs) {
       writeLog('INFO', 'Logging setting changed', {
         oldValue: oldSettings.enableLogs,
-        newValue: settings.enableLogs
+        newValue: settings.enableLogs,
+        source: 'SERVER'
       });
       initLogger(settings.enableLogs);
     }
@@ -90,7 +91,8 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
     if (oldSettings.devMode !== settings.devMode) {
       writeLog('INFO', 'Developer mode changed', {
         oldValue: oldSettings.devMode,
-        newValue: settings.devMode
+        newValue: settings.devMode,
+        source: 'SERVER'
       });
       
       // Update DevTools for main window
@@ -103,13 +105,13 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
       }
     }
   } catch (error: any) {
-    writeLog('ERROR', 'Failed to save settings', { error: error.message });
+    writeLog('ERROR', 'Failed to save settings', { error: error.message, source: 'SERVER' });
     throw error;
   }
 });
 
 ipcMain.handle('restart-app', () => {
-  writeLog('INFO', 'Restarting application after settings change');
+  writeLog('INFO', 'Restarting application after settings change', { source: 'SERVER' });
   app.relaunch();
   app.quit();
 });
@@ -118,8 +120,12 @@ ipcMain.handle('open-logs-directory', () => {
   const logsDir = getLogsDirectory();
   if (fs.existsSync(logsDir)) {
     shell.openPath(logsDir);
-    writeLog('INFO', 'Logs directory opened by user');
+    writeLog('INFO', 'Logs directory opened by user', { source: 'SERVER' });
   }
+});
+
+ipcMain.handle('write-log', (event, level, message, data) => {
+  writeLog(level, message, data);
 });
 
 // Function to open settings window
@@ -136,13 +142,13 @@ function openSettingsWindow() {
 
 // Register global shortcut
 app.whenReady().then(() => {
-  writeLog('INFO', 'Application ready');
+  writeLog('INFO', 'Application ready', { source: 'SERVER' });
   splashWindow = createSplashWindow();
   mainWindow = createMainWindow(settings.devMode);
   
   // Register the global shortcut
   globalShortcut.register('CommandOrControl+Shift+Z', () => {
-    writeLog('INFO', 'Settings shortcut triggered');
+    writeLog('INFO', 'Settings shortcut triggered', { source: 'SERVER' });
     openSettingsWindow();
   });
   
@@ -162,19 +168,19 @@ app.whenReady().then(() => {
 
 // Clean up shortcuts when app quits
 app.on('will-quit', () => {
-  writeLog('INFO', 'Application will quit');
+  writeLog('INFO', 'Application will quit', { source: 'SERVER' });
   globalShortcut.unregisterAll();
 });
 
 app.on('window-all-closed', () => {
-  writeLog('INFO', 'All windows closed');
+  writeLog('INFO', 'All windows closed', { source: 'SERVER' });
   if (process.platform !== 'darwin') {
     app.quit();
   }
 });
 
 app.on('activate', () => {
-  writeLog('INFO', 'Application activated');
+  writeLog('INFO', 'Application activated', { source: 'SERVER' });
   if (BrowserWindow.getAllWindows().length === 0) {
     splashWindow = createSplashWindow();
     mainWindow = createMainWindow(settings.devMode);
