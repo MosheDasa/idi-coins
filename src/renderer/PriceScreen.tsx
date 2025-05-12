@@ -76,7 +76,68 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
           padding: 0;
           overflow: hidden !important;
         }
+        .idi-topbar {
+          position: absolute;
+          top: 0;
+          right: 0;
+          left: 0;
+          height: 36px;
+          background: #f8fafc;
+          display: flex;
+          flex-direction: row-reverse;
+          align-items: center;
+          justify-content: flex-start;
+          z-index: 10;
+          -webkit-app-region: drag;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        .idi-topbar-btns {
+          display: flex;
+          flex-direction: row-reverse;
+          gap: 2px;
+          margin-right: 8px;
+          -webkit-app-region: no-drag;
+        }
+        .idi-topbar-btn {
+          width: 32px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          color: #64748b;
+          background: transparent;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+        .idi-topbar-btn:hover {
+          background: #e5e7eb;
+          color: #ef4444;
+        }
+        .idi-topbar-btn.minimize:hover {
+          color: #2563eb;
+        }
       `}</style>
+      <div className="idi-topbar">
+        <div className="idi-topbar-btns">
+          <button
+            className="idi-topbar-btn close"
+            title="סגור"
+            onClick={() => window.electron?.closeWindow?.()}
+          >
+            &#10005;
+          </button>
+          <button
+            className="idi-topbar-btn minimize"
+            title="מזער"
+            onClick={() => window.electron?.minimizeWindow?.()}
+          >
+            &#8211;
+          </button>
+        </div>
+      </div>
       <div
         style={{
           position: 'fixed',
