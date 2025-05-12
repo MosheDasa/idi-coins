@@ -2,11 +2,16 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
-// Load environment variables
+// Load environment variables from .env file
 dotenv.config();
 
-// Store API URL - use default if not set
-const API_URL = process.env.API_URL || 'https://api.genderize.io';
+// Get API URL from .env
+const API_URL = process.env.API_URL;
+console.log('Loading with API URL:', API_URL);
+
+if (!API_URL) {
+  console.error('Warning: API_URL is not set in .env file');
+}
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
@@ -48,7 +53,13 @@ function createMainWindow() {
   });
 
   // Set up IPC handler for API URL
-  ipcMain.handle('get-api-url', () => API_URL);
+  ipcMain.handle('get-api-url', () => {
+    console.log('Renderer requested API URL, returning:', API_URL);
+    if (!API_URL) {
+      throw new Error('API_URL is not configured in .env file');
+    }
+    return API_URL;
+  });
 
   mainWindow.removeMenu();
 

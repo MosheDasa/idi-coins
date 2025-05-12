@@ -5,9 +5,13 @@ import { Configuration, DefinePlugin } from 'webpack';
 import * as dotenv from 'dotenv';
 
 // Load environment variables
-dotenv.config();
+const env = dotenv.config().parsed || {};
 
-const API_URL = JSON.stringify(process.env.API_URL || 'https://api.genderize.io');
+// Create a string that will be replaced at build time
+const envKeys = Object.keys(env).reduce((prev, next) => {
+  prev[`process.env.${next}`] = JSON.stringify(env[next]);
+  return prev;
+}, {} as { [key: string]: string });
 
 interface WebpackConfig extends Configuration {
   target?: string;
@@ -43,9 +47,7 @@ const mainConfig: WebpackConfig = {
         { from: 'src/main/splash.html', to: 'splash.html' }
       ],
     }),
-    new DefinePlugin({
-      'process.env.API_URL': API_URL
-    })
+    new DefinePlugin(envKeys)
   ],
   node: {
     __dirname: false,
@@ -81,9 +83,7 @@ const rendererConfig: WebpackConfig = {
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'src/main/index.html')
     }),
-    new DefinePlugin({
-      'process.env.API_URL': API_URL
-    })
+    new DefinePlugin(envKeys)
   ]
 };
 
