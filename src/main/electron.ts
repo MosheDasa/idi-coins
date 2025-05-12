@@ -54,7 +54,7 @@ function createMainWindow() {
 
   // Set up IPC handler for API URL
   ipcMain.handle('get-api-url', () => {
-    console.log('Renderer requested API URL, returning:', API_URL);
+    console.log('dasa Renderer requested API URL, returning:', API_URL);
     if (!API_URL) {
       throw new Error('API_URL is not configured in .env file');
     }

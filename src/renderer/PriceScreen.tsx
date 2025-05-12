@@ -29,7 +29,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
     try {
       setIsLoading(true);
       const apiUrl = await window.electron.getApiUrl();
-      console.log('API URL:', apiUrl);
+      console.log('dasaAPI URL:', apiUrl);
 
       if (!apiUrl) {
         throw new Error('API URL is not configured');
@@ -48,7 +48,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
       }
       
       const data = await response.json();
-      console.log('Received data:', data);
+      console.log('dasa Received data:', data);
 
       setGenderData(data);
       setError(null);
@@ -100,7 +100,6 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
       textAlign: 'center',
       direction: 'rtl'
     }}>
-      <h1>idi-coins</h1>
       <p>נציג: משה כהן</p>
       {isLoading || !genderData ? (
         <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '150px'}}>
