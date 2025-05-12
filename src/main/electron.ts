@@ -16,8 +16,6 @@ let settings = {
   environment: process.env.NODE_ENV || 'development',
   enableLogs: true,
   userId: process.env.USERID || '',
-  representativeName: 'משה כהן',
-  connected: false,
   devMode: false,
   apiUrl: process.env.API_URL || ''
 };
