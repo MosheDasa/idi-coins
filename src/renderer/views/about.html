@@ -257,6 +257,19 @@
             border-color: var(--primary-color);
         }
 
+        .secondary-button:disabled {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .secondary-button:disabled:hover {
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+
         .toast {
             position: fixed;
             bottom: 24px;
@@ -325,7 +338,7 @@
                     <div class="setting-label">נתיב קובץ הלוגים</div>
                     <div class="path-container">
                         <div class="path-text" id="configPath" dir="ltr" title="לחץ להעתקה">loading...</div>
-                        <button class="button secondary-button" onclick="openLogsDirectory()">פתח</button>
+                        <button class="button secondary-button" id="openLogsButton" onclick="openLogsDirectory()">פתח</button>
                     </div>
                 </div>
 
@@ -376,12 +389,21 @@
                     }, 1000);
                 });
             });
+
+            // Handle logs button state
+            const openLogsButton = document.getElementById('openLogsButton');
+            openLogsButton.disabled = !settings.enableLogs;
             
             // Set editable fields
             document.getElementById('userId').value = settings.userId || '';
             document.getElementById('apiUrl').value = settings.apiUrl || '';
             document.getElementById('enableLogs').checked = settings.enableLogs;
             document.getElementById('devMode').checked = settings.devMode;
+
+            // Add event listener for enableLogs checkbox
+            document.getElementById('enableLogs').addEventListener('change', (e) => {
+                openLogsButton.disabled = !e.target.checked;
+            });
         });
 
         async function saveSettings() {
