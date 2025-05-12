@@ -1,241 +1,78 @@
 import React, { useEffect, useState } from 'react';
 
-interface GenderData {
-  count: number;
-  name: string;
-  gender: string;
-  probability: number;
-}
-
 interface PriceScreenProps {
   onDataLoaded?: () => void;
 }
 
-// We'll get this from the window object
+// Fix for Electron context
 declare global {
   interface Window {
-    electron: {
-      getApiUrl: () => Promise<string>;
-      getSettings: () => Promise<any>;
-      minimize: () => void;
-      close: () => void;
-    }
+    electron: any;
   }
 }
 
+const CoinIcon: React.FC = () => (
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="32" cy="32" r="28" fill="#fbbf24" stroke="#f59e0b" strokeWidth="4" />
+    <text x="32" y="40" textAnchor="middle" fontSize="28" fontWeight="bold" fill="#fff">₪</text>
+  </svg>
+);
+
 const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
-  const [genderData, setGenderData] = useState<GenderData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [settings, setSettings] = useState<any>(null);
 
-  const fetchSettings = async () => {
-    try {
-      const settingsData = await window.electron.getSettings();
-      setSettings(settingsData);
-      return settingsData;
-    } catch (err) {
-      console.error('Error fetching settings:', err);
-      return null;
-    }
-  };
-
-  const fetchGenderData = async () => {
-    try {
-      setIsLoading(true);
-      const apiUrl = await window.electron.getApiUrl();
-      console.log('API URL:', apiUrl);
-
-      if (!apiUrl) {
-        throw new Error('API URL is not configured');
-      }
-
-      const response = await fetch(`${apiUrl}/?name=luc`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('Received data:', data);
-
-      setGenderData(data);
-      setError(null);
-      
-      if (onDataLoaded) {
-        onDataLoaded();
-      }
-    } catch (err) {
-      console.error('Error fetching data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    console.log('Component mounted, fetching data...');
-    const initialize = async () => {
-      const settingsData = await fetchSettings();
-      await fetchGenderData();
-      
-      // Set up polling interval based on settings
-      const interval = setInterval(fetchGenderData, (settingsData?.pollingInterval || 30) * 1000);
-      return () => clearInterval(interval);
-    };
-    
-    initialize();
-  }, []);
+    (async () => {
+      if (window.electron?.getSettings) {
+        const s = await window.electron.getSettings();
+        setSettings(s);
+      }
+      if (onDataLoaded) onDataLoaded();
+    })();
+  }, [onDataLoaded]);
 
-  if (error) {
-    return (
-      <div style={{
-        padding: '20px',
-        fontFamily: 'Arial, sans-serif',
-        textAlign: 'center',
-        direction: 'rtl'
-      }}>
-        <h1>idi-coins</h1>
-        <p>נציג: משה כהן</p>
-        <p style={{ color: 'red' }}>שגיאה: {error}</p>
-        <button onClick={fetchGenderData} style={{
-          padding: '10px 20px',
-          marginTop: '10px',
-          cursor: 'pointer'
-        }}>
-          נסה שוב
-        </button>
-      </div>
-    );
-  }
+  const repName = settings?.representativeName || settings?.userId || '---';
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('he-IL');
+  const sum = settings?.sum || '5,000';
 
   return (
-    <>
-      {/* Custom title bar */}
-      <div style={{
-        WebkitUserSelect: 'none',
-        height: '32px',
-        backgroundColor: '#2196F3',
+    <div
+      style={{
+        minHeight: '100vh',
+        background: '#f8fafc',
         display: 'flex',
-        justifyContent: 'flex-end',
+        flexDirection: 'column',
         alignItems: 'center',
-        padding: '0'
-      }} className="draggable">
-        <div style={{
-          display: 'flex',
-          height: '100%'
-        }} className="non-draggable">
-          <button onClick={() => window.electron.minimize()} style={{
-            border: 'none',
-            background: 'none',
-            width: '46px',
-            height: '100%',
-            cursor: 'pointer',
-            fontSize: '16px',
-            color: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'background-color 0.2s'
-          }} className="window-control">
-            &#x2014;
-          </button>
-          <button onClick={() => window.electron.close()} style={{
-            border: 'none',
-            background: 'none',
-            width: '46px',
-            height: '100%',
-            cursor: 'pointer',
-            fontSize: '16px',
-            color: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'background-color 0.2s'
-          }} className="window-control close-button">
-            &#x2715;
-          </button>
+        justifyContent: 'center',
+        fontFamily: 'Heebo, Arial, sans-serif',
+      }}
+    >
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: 20,
+          boxShadow: '0 4px 24px 0 rgba(0,0,0,0.08)',
+          padding: '32px 32px 24px 32px',
+          minWidth: 320,
+          maxWidth: 340,
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ fontSize: 18, color: '#2563eb', fontWeight: 600, marginBottom: 8 }}>
+          שם נציג: {repName}
+        </div>
+        <div style={{ fontSize: 14, color: '#64748b', marginBottom: 16 }}>
+          לידיעתך סכום הצבירה בקופה שלך נכון לתאריך: {dateStr}
+        </div>
+        <div style={{ margin: '0 auto 16px auto', width: 64, height: 64 }}>
+          <CoinIcon />
+        </div>
+        <div style={{ fontSize: 36, fontWeight: 700, color: '#059669', letterSpacing: 1, marginBottom: 0 }}>
+          {sum} <span style={{ fontSize: 22, fontWeight: 500, color: '#2563eb' }}>₪</span>
         </div>
       </div>
-
-      {/* Main content */}
-      <div style={{
-        padding: '20px',
-        fontFamily: 'Arial, sans-serif',
-        textAlign: 'center',
-        direction: 'rtl',
-        height: 'calc(100vh - 32px)',
-        boxSizing: 'border-box',
-        overflow: 'hidden'
-      }}>
-        <style>{`
-          body {
-            margin: 0;
-            overflow: hidden;
-          }
-          
-          .draggable {
-            -webkit-app-region: drag;
-          }
-          
-          .non-draggable {
-            -webkit-app-region: no-drag;
-          }
-          
-          .window-control:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-          }
-          
-          .close-button:hover {
-            background-color: #e81123 !important;
-          }
-          
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-
-        <p>נציג: {settings?.representativeName || 'לא מוגדר'}</p>
-        {isLoading || !genderData ? (
-          <div style={{
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            height: 'calc(100% - 60px)'
-          }}>
-            <div className="loader" style={{
-              width: '60px',
-              height: '60px',
-              border: '8px solid #f3f3f3',
-              borderTop: '8px solid #2196F3',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }} />
-            <span style={{marginTop: '16px'}}>טוען נתונים...</span>
-          </div>
-        ) : (
-          <div style={{
-            height: 'calc(100% - 60px)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center'
-          }}>
-            <p>מספר התוצאות: {genderData.count}</p>
-            <p>שם: {genderData.name}</p>
-            <p>מין: {genderData.gender}</p>
-            <p>הסתברות: {genderData.probability}</p>
-          </div>
-        )}
-      </div>
-    </>
+    </div>
   );
 };
 
