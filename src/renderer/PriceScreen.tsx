@@ -22,6 +22,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
   const [settings, setSettings] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Load settings once on mount
   useEffect(() => {
@@ -36,7 +37,17 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
     })();
   }, []);
 
-  // Fetch user only after settings are loaded
+  // Manual and automatic refresh logic
+  useEffect(() => {
+    if (!settings) return;
+    if (!settings.apiRefreshInterval || isNaN(settings.apiRefreshInterval)) return;
+    const interval = setInterval(() => {
+      setRefreshKey(k => k + 1);
+    }, settings.apiRefreshInterval * 1000);
+    return () => clearInterval(interval);
+  }, [settings]);
+
+  // Fetch user only after settings are loaded or refreshKey changes
   useEffect(() => {
     if (!settings) {
       console.warn('[IDI-COINS] Settings not loaded yet, skipping API fetch');
@@ -65,7 +76,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
       }
       if (onDataLoaded) onDataLoaded();
     })();
-  }, [settings, onDataLoaded]);
+  }, [settings, onDataLoaded, refreshKey]);
 
   return (
     <>
@@ -84,19 +95,18 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
           height: 36px;
           background: #f8fafc;
           display: flex;
-          flex-direction: row-reverse;
+          flex-direction: row;
           align-items: center;
-          justify-content: flex-start;
+          justify-content: space-between;
           z-index: 10;
           -webkit-app-region: drag;
           border-bottom: 1px solid #e5e7eb;
         }
         .idi-topbar-btns {
           display: flex;
-          flex-direction: row-reverse;
+          flex-direction: row;
           gap: 2px;
-          margin-right: 8px;
-          -webkit-app-region: no-drag;
+          margin-right: 0;
         }
         .idi-topbar-btn {
           width: 32px;
@@ -111,6 +121,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
           border-radius: 4px;
           cursor: pointer;
           transition: background 0.15s;
+          -webkit-app-region: no-drag;
         }
         .idi-topbar-btn:hover {
           background: #e5e7eb;
@@ -120,8 +131,20 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
           color: #2563eb;
         }
       `}</style>
-      <div className="idi-topbar">
-        <div className="idi-topbar-btns">
+      <div className="idi-topbar" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <button
+          className="idi-topbar-btn refresh"
+          title="רענן"
+          style={{ marginLeft: 8, border: '2px solid red', zIndex: 1000 }}
+          onClick={() => {
+            console.log('[IDI-COINS] Refresh button clicked');
+            setRefreshKey(k => k + 1);
+          }}
+        >
+          &#x21bb;
+        </button>
+        <div style={{ flex: 1 }} />
+        <div className="idi-topbar-btns" style={{ flexDirection: 'row', gap: '2px', marginRight: 0 }}>
           <button
             className="idi-topbar-btn close"
             title="סגור"
@@ -189,7 +212,12 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
                 שם נציג: {user ? `${user.name.first} ${user.name.last}` : 'not found - error 111'}
               </div>
               <div style={{ fontSize: 14, color: '#64748b', marginBottom: 16 }}>
-                לידיעתך סכום הצבירה בקופה שלך נכון לתאריך: {new Date().toLocaleDateString('he-IL')}
+                לידיעתך סכום הצבירה בקופה שלך נכון לתאריך: {(() => {
+                  const now = new Date();
+                  const date = now.toLocaleDateString('he-IL');
+                  const time = now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+                  return `${time} ${date}`;
+                })()}
               </div>
               <div style={{ margin: '0 auto 16px auto', width: 64, height: 64 }}>
                 <CoinIcon />

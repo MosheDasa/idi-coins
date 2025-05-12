@@ -16,8 +16,11 @@ let settings = {
   environment: process.env.NODE_ENV || 'development',
   enableLogs: true,
   userId: process.env.USERID || '',
+  representativeName: 'משה כהן',
+  connected: false,
   devMode: false,
-  apiUrl: process.env.API_URL || ''
+  apiUrl: process.env.API_URL || '',
+  apiRefreshInterval: Number(process.env.API_REFRESH_INTERVAL) || 30
 };
 
 // Try to load settings from file
