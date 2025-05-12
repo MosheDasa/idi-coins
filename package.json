@@ -1,6 +1,6 @@
 {
   "name": "idi-coins",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "idi-coins",
   "main": "dist/main.js",
   "scripts": {
@@ -21,6 +21,10 @@
     "win": {
       "target": "nsis",
       "icon": "public/icon.ico"
+    },
+    "nsis": {
+      "runAfterFinish": false,
+      "createDesktopShortcut": true
     },
     "extraMetadata": {
       "main": "dist/main.js"
