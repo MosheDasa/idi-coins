@@ -18,7 +18,8 @@ let settings = {
   userId: process.env.USERID || '',
   representativeName: 'משה כהן',
   connected: false,
-  devMode: false
+  devMode: false,
+  apiUrl: process.env.API_URL || ''
 };
 
 // Try to load settings from file

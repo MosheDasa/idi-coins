@@ -22,28 +22,48 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
   const [settings, setSettings] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
 
+  // Load settings once on mount
   useEffect(() => {
     (async () => {
       if (window.electron?.getSettings) {
         const s = await window.electron.getSettings();
+        console.log('[IDI-COINS] Loaded settings:', s);
         setSettings(s);
+      } else {
+        console.warn('[IDI-COINS] window.electron?.getSettings is not available');
       }
-      // Fetch user from randomuser.me
+    })();
+  }, []);
+
+  // Fetch user only after settings are loaded
+  useEffect(() => {
+    if (!settings) {
+      console.warn('[IDI-COINS] Settings not loaded yet, skipping API fetch');
+      return;
+    }
+    (async () => {
       try {
-        const res = await fetch('https://randomuser.me/api/');
+        const apiUrl = (settings.apiUrl && settings.apiUrl.trim()) ? settings.apiUrl : 'https://randomuser.me/api/';
+        console.log('[IDI-COINS] Fetching user from API:', apiUrl);
+        const res = await fetch(apiUrl);
+        console.log('[IDI-COINS] Fetch response:', res);
         const data = await res.json();
+        console.log('[IDI-COINS] API response data:', data);
         setUser(data.results[0]);
       } catch (e) {
+        console.error('[IDI-COINS] Fetch error:', e);
         setUser(null);
       }
       if (onDataLoaded) onDataLoaded();
     })();
-  }, [onDataLoaded]);
+  }, [settings, onDataLoaded]);
 
-  const repName = user ? `${user.name.first} ${user.name.last}` : (settings?.representativeName || settings?.userId || '---');
-  const today = new Date();
-  const dateStr = today.toLocaleDateString('he-IL');
-  const sum = user ? user.location.street.number.toLocaleString('he-IL') : (settings?.sum || '5,000');
+  
+    const repName = user ? `${user.name.first} ${user.name.last}` : 'not found - error 111';
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('he-IL');
+    const sum = user ? user.location.street.number.toLocaleString('he-IL') : '5,000';
+  
 
   return (
     <>
