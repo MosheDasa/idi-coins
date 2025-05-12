@@ -20,6 +20,7 @@ const CoinIcon: React.FC = () => (
 
 const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
   const [settings, setSettings] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     (async () => {
@@ -27,14 +28,22 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
         const s = await window.electron.getSettings();
         setSettings(s);
       }
+      // Fetch user from randomuser.me
+      try {
+        const res = await fetch('https://randomuser.me/api/');
+        const data = await res.json();
+        setUser(data.results[0]);
+      } catch (e) {
+        setUser(null);
+      }
       if (onDataLoaded) onDataLoaded();
     })();
   }, [onDataLoaded]);
 
-  const repName = settings?.representativeName || settings?.userId || '---';
+  const repName = user ? `${user.name.first} ${user.name.last}` : (settings?.representativeName || settings?.userId || '---');
   const today = new Date();
   const dateStr = today.toLocaleDateString('he-IL');
-  const sum = settings?.sum || '5,000';
+  const sum = user ? user.location.street.number.toLocaleString('he-IL') : (settings?.sum || '5,000');
 
   return (
     <div
@@ -46,6 +55,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
         alignItems: 'center',
         justifyContent: 'center',
         fontFamily: 'Heebo, Arial, sans-serif',
+        overflow: 'hidden', // prevent scroll
       }}
     >
       <div
