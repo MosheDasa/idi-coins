@@ -135,7 +135,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
         <button
           className="idi-topbar-btn refresh"
           title="רענן"
-          style={{ marginLeft: 8, border: '2px solid red', zIndex: 1000 }}
+          style={{ marginLeft: 8, zIndex: 1000 }}
           onClick={() => {
             console.log('[IDI-COINS] Refresh button clicked');
             setRefreshKey(k => k + 1);
@@ -145,6 +145,13 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
         </button>
         <div style={{ flex: 1 }} />
         <div className="idi-topbar-btns" style={{ flexDirection: 'row', gap: '2px', marginRight: 0 }}>
+        <button
+            className="idi-topbar-btn minimize"
+            title="מזער"
+            onClick={() => window.electron?.minimizeWindow?.()}
+          >
+            &#8211;
+          </button>
           <button
             className="idi-topbar-btn close"
             title="סגור"
@@ -152,13 +159,7 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
           >
             &#10005;
           </button>
-          <button
-            className="idi-topbar-btn minimize"
-            title="מזער"
-            onClick={() => window.electron?.minimizeWindow?.()}
-          >
-            &#8211;
-          </button>
+        
         </div>
       </div>
       <div
