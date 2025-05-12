@@ -46,43 +46,57 @@ const PriceScreen: React.FC<PriceScreenProps> = ({ onDataLoaded }) => {
   const sum = user ? user.location.street.number.toLocaleString('he-IL') : (settings?.sum || '5,000');
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: '#f8fafc',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'Heebo, Arial, sans-serif',
-        overflow: 'hidden', // prevent scroll
-      }}
-    >
+    <>
+      <style>{`
+        html, body {
+          height: 100vh !important;
+          margin: 0;
+          padding: 0;
+          overflow: hidden !important;
+        }
+      `}</style>
       <div
         style={{
-          background: '#fff',
-          borderRadius: 20,
-          boxShadow: '0 4px 24px 0 rgba(0,0,0,0.08)',
-          padding: '32px 32px 24px 32px',
-          minWidth: 320,
-          maxWidth: 340,
-          textAlign: 'center',
+          position: 'fixed',
+          inset: 0,
+          minHeight: '100vh',
+          height: '100vh',
+          width: '100vw',
+          background: '#f8fafc',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: 'Heebo, Arial, sans-serif',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ fontSize: 18, color: '#2563eb', fontWeight: 600, marginBottom: 8 }}>
-          שם נציג: {repName}
-        </div>
-        <div style={{ fontSize: 14, color: '#64748b', marginBottom: 16 }}>
-          לידיעתך סכום הצבירה בקופה שלך נכון לתאריך: {dateStr}
-        </div>
-        <div style={{ margin: '0 auto 16px auto', width: 64, height: 64 }}>
-          <CoinIcon />
-        </div>
-        <div style={{ fontSize: 36, fontWeight: 700, color: '#059669', letterSpacing: 1, marginBottom: 0 }}>
-          {sum} <span style={{ fontSize: 22, fontWeight: 500, color: '#2563eb' }}>₪</span>
+        <div
+          style={{
+            background: '#fff',
+            borderRadius: 20,
+            boxShadow: '0 4px 24px 0 rgba(0,0,0,0.08)',
+            padding: '32px 32px 24px 32px',
+            minWidth: 320,
+            maxWidth: 340,
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontSize: 18, color: '#2563eb', fontWeight: 600, marginBottom: 8 }}>
+            שם נציג: {repName}
+          </div>
+          <div style={{ fontSize: 14, color: '#64748b', marginBottom: 16 }}>
+            לידיעתך סכום הצבירה בקופה שלך נכון לתאריך: {dateStr}
+          </div>
+          <div style={{ margin: '0 auto 16px auto', width: 64, height: 64 }}>
+            <CoinIcon />
+          </div>
+          <div style={{ fontSize: 36, fontWeight: 700, color: '#059669', letterSpacing: 1, marginBottom: 0 }}>
+            {sum} <span style={{ fontSize: 22, fontWeight: 500, color: '#2563eb' }}>₪</span>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
