@@ -128,6 +128,32 @@ ipcMain.handle('write-log', (event, level, message, data) => {
   writeLog(level, message, data);
 });
 
+ipcMain.handle('reset-settings', async () => {
+  writeLog('INFO', 'Resetting settings to default', { source: 'SERVER' });
+  try {
+    if (fs.existsSync(settingsPath)) {
+      fs.unlinkSync(settingsPath);
+    }
+    // Reset in-memory settings to initial values from env
+    settings = {
+      version: app.getVersion(),
+      environment: process.env.NODE_ENV,
+      enableLogs: process.env.ENABLE_LOGS !== undefined ? process.env.ENABLE_LOGS === 'true' : undefined,
+      userId: process.env.USERID,
+      representativeName: process.env.REPRESENTATIVE_NAME,
+      connected: undefined,
+      devMode: process.env.DEV_MODE !== undefined ? process.env.DEV_MODE === 'true' : undefined,
+      apiUrl: process.env.API_URL,
+      apiRefreshInterval: process.env.API_REFRESH_INTERVAL !== undefined ? Number(process.env.API_REFRESH_INTERVAL) : undefined
+    };
+    writeLog('INFO', 'Settings reset to default', { settings, source: 'SERVER' });
+    return true;
+  } catch (error: any) {
+    writeLog('ERROR', 'Failed to reset settings', { error: error.message, source: 'SERVER' });
+    throw error;
+  }
+});
+
 // Function to open settings window
 function openSettingsWindow() {
   if (aboutWindow) {

@@ -219,7 +219,8 @@
             max-width: 456px;
             margin: 0 auto;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            flex-direction: row-reverse;
         }
 
         .button {
@@ -358,6 +359,7 @@
         <footer class="footer">
             <div class="footer-content">
                 <button class="button primary-button" onclick="saveSettings()">שמור שינויים</button>
+                <button class="button secondary-button" onclick="resetSettings()">איפוס הגדרות</button>
             </div>
         </footer>
     </div>
@@ -431,6 +433,22 @@
                 }, 1000);
             } catch (error) {
                 alert('שגיאה בשמירת ההגדרות: ' + error.message);
+            }
+        }
+
+        async function resetSettings() {
+            if (!confirm('האם אתה בטוח שברצונך לאפס את כל ההגדרות לברירת מחדל?')) return;
+            try {
+                await ipcRenderer.invoke('reset-settings');
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = 'ההגדרות אופסו! מפעיל מחדש...';
+                document.body.appendChild(toast);
+                setTimeout(async () => {
+                    await ipcRenderer.invoke('restart-app');
+                }, 1000);
+            } catch (error) {
+                alert('שגיאה באיפוס ההגדרות: ' + error.message);
             }
         }
     </script>
