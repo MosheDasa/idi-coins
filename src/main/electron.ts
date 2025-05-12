@@ -1,7 +1,8 @@
-import { app, BrowserWindow, ipcMain, Menu, dialog, MenuItemConstructorOptions, globalShortcut } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, dialog, MenuItemConstructorOptions, globalShortcut, shell } from 'electron';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
+import { initLogger, writeLog, getLogsDirectory } from './logger';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -24,6 +25,9 @@ try {
 } catch (err) {
   console.error('Error loading settings:', err);
 }
+
+// Initialize logger with settings
+initLogger(settings.enableLogs);
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
@@ -52,8 +56,11 @@ function createMenu() {
 }
 
 function createAboutWindow() {
+  writeLog('INFO', 'Opening settings window');
+  
   if (aboutWindow) {
     aboutWindow.focus();
+    writeLog('INFO', 'Settings window focused (already open)');
     return;
   }
 
@@ -77,14 +84,16 @@ function createAboutWindow() {
   aboutWindow.loadFile(path.join(__dirname, 'about.html'));
 
   aboutWindow.on('closed', () => {
+    writeLog('INFO', 'Settings window closed');
     aboutWindow = null;
   });
 
-  // Remove the menu from the about window
   aboutWindow.removeMenu();
 }
 
 function createSplashWindow() {
+  writeLog('INFO', 'Creating splash window');
+  
   splashWindow = new BrowserWindow({
     width: 500,
     height: 350,
@@ -103,6 +112,8 @@ function createSplashWindow() {
 }
 
 function createMainWindow() {
+  writeLog('INFO', 'Creating main window');
+  
   mainWindow = new BrowserWindow({
     width: 500,
     height: 350,
@@ -129,52 +140,77 @@ function createMainWindow() {
   mainWindow.removeMenu();
   
   mainWindow.webContents.on('did-finish-load', () => {
+    writeLog('INFO', 'Main window loaded');
     setTimeout(() => {
       if (splashWindow) {
         splashWindow.close();
         splashWindow = null;
+        writeLog('INFO', 'Splash window closed');
       }
       if (mainWindow) {
         mainWindow.show();
+        writeLog('INFO', 'Main window shown');
       }
     }, 1000);
+  });
+
+  mainWindow.on('closed', () => {
+    writeLog('INFO', 'Main window closed');
+    mainWindow = null;
   });
 }
 
 // IPC Handlers
 ipcMain.handle('get-api-url', () => {
-  if (settings.enableLogs) {
-    console.log('Renderer requested API URL, returning:', settings.apiUrl);
-  }
+  writeLog('INFO', 'API URL requested', { url: settings.apiUrl });
   return settings.apiUrl || 'https://api.genderize.io';
 });
 
-ipcMain.handle('get-settings', () => settings);
+ipcMain.handle('get-settings', () => {
+  writeLog('INFO', 'Settings requested', { settings });
+  const logsDir = settings.enableLogs ? getLogsDirectory() : '';
+  return { ...settings, logsDirectory: logsDir };
+});
 
 ipcMain.handle('minimize-window', () => {
   if (mainWindow) {
+    writeLog('INFO', 'Window minimized');
     mainWindow.minimize();
   }
 });
 
 ipcMain.handle('close-window', () => {
   if (mainWindow) {
+    writeLog('INFO', 'Window closed by user');
     mainWindow.close();
   }
 });
 
 ipcMain.handle('save-settings', async (event, newSettings) => {
-  // Update settings object
-  settings = { 
-    ...settings, 
-    ...newSettings,
-    // Preserve version from package.json
-    version: app.getVersion()
-  };
+  writeLog('INFO', 'Saving new settings', { newSettings });
   
-  // Save to file
   try {
+    // Update settings object
+    const oldSettings = { ...settings };
+    settings = { 
+      ...settings, 
+      ...newSettings,
+      // Preserve version from package.json
+      version: app.getVersion()
+    };
+    
+    // Save to file
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    writeLog('INFO', 'Settings saved successfully');
+    
+    // Reinitialize logger if logging setting changed
+    if (oldSettings.enableLogs !== settings.enableLogs) {
+      writeLog('INFO', 'Logging setting changed', { 
+        oldValue: oldSettings.enableLogs, 
+        newValue: settings.enableLogs 
+      });
+      initLogger(settings.enableLogs);
+    }
     
     // Show restart dialog
     const response = await dialog.showMessageBox({
@@ -186,37 +222,50 @@ ipcMain.handle('save-settings', async (event, newSettings) => {
     });
     
     if (response.response === 0) {
+      writeLog('INFO', 'User chose to restart application');
       app.relaunch();
       app.quit();
     }
-  } catch (err) {
-    console.error('Error saving settings:', err);
-    throw err;
+  } catch (error: any) {
+    writeLog('ERROR', 'Failed to save settings', { error: error.message });
+    throw error;
+  }
+});
+
+ipcMain.handle('open-logs-directory', () => {
+  const logsDir = getLogsDirectory();
+  if (fs.existsSync(logsDir)) {
+    shell.openPath(logsDir);
+    writeLog('INFO', 'Logs directory opened by user');
   }
 });
 
 app.whenReady().then(() => {
+  writeLog('INFO', 'Application ready');
   createSplashWindow();
   createMainWindow();
   
   // Register keyboard shortcut
   globalShortcut.register('CommandOrControl+Shift+Z', () => {
+    writeLog('INFO', 'Settings shortcut triggered');
     createAboutWindow();
   });
 });
 
-// Add cleanup for shortcuts
 app.on('will-quit', () => {
+  writeLog('INFO', 'Application will quit');
   globalShortcut.unregisterAll();
 });
 
 app.on('window-all-closed', () => {
+  writeLog('INFO', 'All windows closed');
   if (process.platform !== 'darwin') {
     app.quit();
   }
 });
 
 app.on('activate', () => {
+  writeLog('INFO', 'Application activated');
   if (BrowserWindow.getAllWindows().length === 0) {
     createSplashWindow();
     createMainWindow();
