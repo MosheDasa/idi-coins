@@ -171,3 +171,11 @@ src/
 ## תמיכה
 
 לשאלות ותמיכה, אנא צור issue בפרויקט או פנה לצוות הפיתוח. 
+
+
+
+# API Configuration
+API_URL=https://randomuser.me/api/
+# Application Configuration
+NODE_ENV=development
+API_REFRESH_INTERVAL=60
